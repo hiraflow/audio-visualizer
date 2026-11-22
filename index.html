@@ -3,337 +3,323 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#080b12">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#080b16">
 <title>Audio Visualizer Pro</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;padding:13px;background:#080b12;color:#f4f6ff;font-family:system-ui,sans-serif}
-.app{max-width:1000px;margin:auto}
-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-h1{font-size:17px;letter-spacing:2px;margin:0}
-small,.note{color:#899bb5}
-.status{font-size:11px;color:#70dfb0}
-.screen{height:42vh;min-height:290px;max-height:520px;background:radial-gradient(ellipse,#17243c,#080b12 75%);border:1px solid #29364b;border-radius:15px;overflow:hidden;position:relative}
-canvas{width:100%;height:100%;display:block}
-.tag{position:absolute;top:10px;left:12px;font-size:11px;letter-spacing:2px;color:#b5c8e5}
-.modes{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0}
-button{background:#151e2d;border:1px solid #303e55;color:#cbd8ed;border-radius:9px;padding:11px 3px;font-size:12px}
-button.active{background:#254b70;border-color:#64baff;color:white}
-.controls{display:flex;gap:7px;margin-bottom:12px}
-.controls button{flex:1}
-.primary{background:#267bd0;color:white;border-color:#4899ed;font-weight:bold}
-button:disabled{opacity:.4}
-.panel{background:#111824;border:1px solid #29364b;border-radius:12px;padding:13px;margin-bottom:10px}
-.setting{display:flex;justify-content:space-between;font-size:12px;color:#aabbd2;margin-bottom:7px}
-input[type=range]{width:100%;accent-color:#65baff;margin-bottom:12px}
-.bands{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px}
-.band{background:#111824;border:1px solid #29364b;border-radius:10px;padding:10px 5px;text-align:center}
-.band b{font-size:18px;display:block}
-.band span,.band small{font-size:10px;color:#91a3bc}
-.meter{height:7px;background:#28354b;border-radius:10px;overflow:hidden}
-#meter{height:100%;width:0;background:linear-gradient(90deg,#28baff,#9d73ff,#ff65b7)}
-.note{font-size:11px;line-height:1.6}
-@media(max-width:450px){.screen{height:38vh;min-height:260px}}
+body{
+ margin:0;background:#080b16;color:#eef3ff;
+ font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+ overflow:hidden
+}
+header{padding:15px 18px;display:flex;justify-content:space-between;align-items:center}
+h1{font-size:18px;margin:0}
+#status{font-size:11px;color:#8292b5}
+main{padding:0 14px}
+canvas{
+ width:100%;height:48vh;display:block;
+ background:radial-gradient(ellipse at center,#151d38,#080b16 75%);
+ border-radius:18px
+}
+.controls{margin-top:14px;display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+button{
+ border:1px solid #303b5b;background:#151d35;color:white;
+ padding:12px;border-radius:12px;font-size:13px
+}
+button.active{background:#334c91;border-color:#789cff}
+#start{background:#385bd0;border:0;font-weight:bold}
+.meters{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:15px}
+.meter{background:#131a2d;border-radius:12px;padding:10px}
+.meter label{font-size:11px;color:#a8b5d2}
+.track{height:7px;background:#29334d;border-radius:8px;margin-top:8px;overflow:hidden}
+.fill{height:100%;width:0%;border-radius:8px;background:#8baaff}
+.value{font-size:17px;margin-top:5px;font-weight:600}
+.settings{margin-top:15px;background:#131a2d;padding:13px;border-radius:13px}
+.setting{margin:10px 0}
+.setting div{display:flex;justify-content:space-between;font-size:12px;color:#b8c5df}
+input[type=range]{width:100%;accent-color:#829fff}
+#freq{font-size:11px;color:#8292b5;text-align:center;margin-top:8px}
 </style>
 </head>
 <body>
-<div class="app">
 <header>
-<div><h1>AUDIO VISUALIZER PRO</h1><small>MIC BOOST EDITION</small></div>
-<div class="status" id="status">● STANDBY</div>
+ <h1>Audio Visualizer Pro</h1>
+ <span id="status">マイク未接続</span>
 </header>
+<main>
+ <canvas id="visual"></canvas>
 
-<div class="screen">
-<canvas id="visual"></canvas>
-<div class="tag" id="effectName">SPECTRUM · Hz</div>
-</div>
+ <div class="controls">
+  <button id="start">● マイクを接続</button>
+  <button class="active" data-mode="spectrum">スペクトラム</button>
+  <button data-mode="circle">サークル</button>
+  <button data-mode="wave">ウェーブ</button>
+  <button data-mode="particles">パーティクル</button>
+ </div>
 
-<div class="modes">
-<button class="active" data-mode="spectrum">▥<br>スペクトラム</button>
-<button data-mode="circle">◎<br>サークル</button>
-<button data-mode="wave">〰<br>ウェーブ</button>
-<button data-mode="particles">✧<br>パーティクル</button>
-</div>
+ <div class="meters">
+  <div class="meter">
+   <label>LOW / 低音</label>
+   <div class="track"><div class="fill" id="lowbar"></div></div>
+   <div class="value" id="lowval">0%</div>
+  </div>
+  <div class="meter">
+   <label>MID / 中音</label>
+   <div class="track"><div class="fill" id="midbar"></div></div>
+   <div class="value" id="midval">0%</div>
+  </div>
+  <div class="meter">
+   <label>HIGH / 高音</label>
+   <div class="track"><div class="fill" id="highbar"></div></div>
+   <div class="value" id="highval">0%</div>
+  </div>
+ </div>
 
-<div class="controls">
-<button class="primary" id="start">▶ マイク開始</button>
-<button id="stop" disabled>■ 停止</button>
-<button id="full">⛶ 全画面</button>
-</div>
+ <div id="freq">周波数解析：20 Hz - 20 kHz</div>
 
-<div class="bands">
-<div class="band"><span>LOW · 低音</span><b id="low" style="color:#35c5ff">0%</b><small>20–250Hz</small></div>
-<div class="band"><span>MID · 中音</span><b id="mid" style="color:#9874ff">0%</b><small>250–4kHz</small></div>
-<div class="band"><span>HIGH · 高音</span><b id="high" style="color:#ff72bc">0%</b><small>4–20kHz</small></div>
-</div>
-
-<div class="panel">
-<div class="setting"><span>マイクブースト</span><b id="boostVal">500%</b></div>
-<input id="boost" type="range" min="100" max="800" value="500">
-<div class="setting"><span>表示感度</span><b id="sensVal">200%</b></div>
-<input id="sens" type="range" min="50" max="400" value="200">
-<div class="setting"><span>滑らかさ</span><b id="smoothVal">65%</b></div>
-<input id="smooth" type="range" min="0" max="95" value="65">
-<div class="setting"><span>音声レベル</span><b id="level">0%</b></div>
-<div class="meter"><div id="meter"></div></div>
-</div>
-
-<p class="note" id="message">マイクを開始してください。ブーストは音声をソフトウェアで増幅します。大きくしすぎるとノイズも増えます。</p>
-</div>
+ <div class="settings">
+  <div class="setting">
+   <div><span>表示感度</span><span id="sensval">150%</span></div>
+   <input id="sensitivity" type="range" min="50" max="300" value="150">
+  </div>
+  <div class="setting">
+   <div><span>低音ブースト</span><span id="bassval">180%</span></div>
+   <input id="bass" type="range" min="50" max="350" value="180">
+  </div>
+  <div class="setting">
+   <div><span>中高音ブースト</span><span id="trebleval">150%</span></div>
+   <input id="treble" type="range" min="50" max="350" value="150">
+  </div>
+  <div class="setting">
+   <div><span>滑らかさ</span><span id="smoothval">65%</span></div>
+   <input id="smooth" type="range" min="10" max="95" value="65">
+  </div>
+ </div>
+</main>
 
 <script>
-(()=>{
-const $=id=>document.getElementById(id);
-const canvas=$('visual'),ctx=canvas.getContext('2d');
-let audio=null,stream=null,analyser=null,source=null,gainNode=null;
-let freq=null,wave=null,mode='spectrum';
-let sensitivity=2,smoothing=.65,boost=5,level=0;
-let W=0,H=0,dpr=1,particles=[];
-let bars=new Float32Array(100),peaks=new Float32Array(100);
-let sampleRate=44100,binHz=10.77;
-const colors=['#35c5ff','#5e91ff','#9874ff','#e779ff','#ff72bc'];
-const minHz=20,maxHz=20000;
+const canvas=document.getElementById("visual");
+const ctx=canvas.getContext("2d");
+const status=document.getElementById("status");
+
+let audioCtx,analyser,data,source,gain;
+let mode="spectrum";
+let running=false;
+let low=0,mid=0,high=0;
+let particles=[];
+let sensitivity=1.5,bassBoost=1.8,trebleBoost=1.5;
+let smooth=.65;
 
 function resize(){
- const r=canvas.getBoundingClientRect();
- dpr=Math.min(devicePixelRatio||1,2);
- W=r.width;H=r.height;
- canvas.width=W*dpr;canvas.height=H*dpr;
+ const dpr=Math.min(devicePixelRatio||1,2);
+ canvas.width=canvas.clientWidth*dpr;
+ canvas.height=canvas.clientHeight*dpr;
  ctx.setTransform(dpr,0,0,dpr,0,0);
 }
-new ResizeObserver(resize).observe(canvas);
+window.addEventListener("resize",resize);
 resize();
 
-function binFor(hz){
- return Math.max(0,Math.min(freq.length-1,Math.round(hz/binHz)));
+function rangeValue(id){
+ return Number(document.getElementById(id).value)/100;
 }
-function getBand(from,to){
- let a=binFor(from),b=binFor(to),sum=0,count=0;
- for(let i=a;i<=b;i++){sum+=freq[i]/255;count++}
- return count?Math.sqrt(sum/count):0;
+function setupSlider(id,label,callback){
+ const el=document.getElementById(id);
+ const out=document.getElementById(label);
+ el.addEventListener("input",()=>{
+  out.textContent=el.value+"%";
+  callback(Number(el.value)/100);
+ });
 }
-function logFrequency(x){
- return minHz*Math.pow(maxHz/minHz,x);
-}
+setupSlider("sensitivity","sensval",v=>sensitivity=v);
+setupSlider("bass","bassval",v=>bassBoost=v);
+setupSlider("treble","trebleval",v=>trebleBoost=v);
+setupSlider("smooth","smoothval",v=>smooth=v);
 
-function spectrum(){
- const left=43,right=12,top=35,bottom=31;
- const gw=W-left-right,gh=H-top-bottom;
- ctx.font='10px system-ui';
- ctx.textAlign='center';
- const ticks=[20,50,100,200,500,1000,2000,5000,10000,20000];
- for(let hz of ticks){
-  if(hz>sampleRate/2)continue;
-  let x=left+Math.log(hz/minHz)/Math.log(maxHz/minHz)*gw;
-  ctx.strokeStyle='#26354b';
-  ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,H-bottom);ctx.stroke();
-  ctx.fillStyle='#9aabc3';
-  ctx.fillText(hz>=1000?(hz/1000)+'k':hz+'',x,H-11);
- }
- for(let j=0;j<=4;j++){
-  let y=top+j*gh/4;
-  ctx.strokeStyle='#202c40';
-  ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(W-right,y);ctx.stroke();
-  ctx.fillStyle='#8093ae';ctx.textAlign='right';
-  ctx.fillText((-j*20)+'',left-7,y+3);
- }
- ctx.textAlign='left';ctx.fillStyle='#91a4c0';
- ctx.fillText('dB',5,top-9);
- ctx.textAlign='center';ctx.fillText('FREQUENCY (Hz)',W/2,H-1);
-
- const n=90,bw=gw/n;
- for(let i=0;i<n;i++){
-  const a=binFor(logFrequency(i/n));
-  const b=Math.max(a+1,binFor(logFrequency((i+1)/n)));
-  let value=0;
-  for(let j=a;j<=Math.min(b,freq.length-1);j++)
-   value=Math.max(value,freq[j]/255);
-  let db=-100+value*80;
-  let normalized=Math.max(0,Math.min(1,(db+85)/65));
-  let target=normalized*gh;
-  bars[i]=Math.max(target,bars[i]*(.72+smoothing*.24));
-  peaks[i]=Math.max(bars[i],peaks[i]-1);
-  let x=left+i*bw+1,y=top+gh-bars[i];
-  let col=colors[Math.min(4,Math.floor(i/n*5))];
-  let g=ctx.createLinearGradient(0,y,0,top+gh);
-  g.addColorStop(0,col);g.addColorStop(1,'#23436f');
-  ctx.fillStyle=g;ctx.shadowColor=col;ctx.shadowBlur=8;
-  ctx.fillRect(x,y,Math.max(1,bw-2),bars[i]);
-  ctx.shadowBlur=0;ctx.fillStyle='#f0f4ff';
-  ctx.fillRect(x,top+gh-peaks[i]-1,Math.max(1,bw-2),2);
- }
-}
-
-function circle(){
- const cx=W/2,cy=H/2,r=Math.min(W,H)*.2;
- for(let i=0;i<180;i++){
-  let a=i/180*Math.PI*2-Math.PI/2;
-  let v=freq[binFor(logFrequency(i/180))]/255;
-  let len=8+Math.pow(v,.65)*H*.27*sensitivity/2;
-  ctx.strokeStyle=colors[Math.min(4,Math.floor(i/180*5))];
-  ctx.lineWidth=2;ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=12;
-  ctx.beginPath();
-  ctx.moveTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);
-  ctx.lineTo(cx+Math.cos(a)*(r+len),cy+Math.sin(a)*(r+len));
-  ctx.stroke();
- }
- ctx.shadowBlur=0;ctx.fillStyle='white';ctx.textAlign='center';
- ctx.font='600 13px system-ui';ctx.fillText('AUDIO',cx,cy+4);
-}
-
-function drawWave(){
- for(let line=0;line<3;line++){
-  ctx.beginPath();
-  for(let i=0;i<wave.length;i++){
-   let x=i/(wave.length-1)*W;
-   let v=(wave[i]-128)/128*H*.42*sensitivity/2;
-   let y=H/2+v*(line===0?1:line===1?.65:.35);
-   if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
-  }
-  ctx.strokeStyle=colors[line+1];ctx.lineWidth=2;
-  ctx.shadowColor=colors[line+1];ctx.shadowBlur=13;
-  ctx.globalAlpha=1-line*.23;ctx.stroke();
- }
- ctx.globalAlpha=1;ctx.shadowBlur=0;
-}
-
-function drawParticles(){
- if(Math.random()<.08+level/100*.8){
-  particles.push({x:Math.random()*W,y:H+5,v:1+Math.random()*3+level/100*5,r:1+Math.random()*3,c:colors[Math.floor(Math.random()*5)],a:1});
- }
- for(let p of particles){
-  p.y-=p.v;p.x+=Math.sin(p.y*.025)*.7;p.a-=.0025;
-  ctx.globalAlpha=Math.max(0,p.a);ctx.fillStyle=p.c;
-  ctx.shadowColor=p.c;ctx.shadowBlur=14;
-  ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();
- }
- particles=particles.filter(p=>p.a>0&&p.y>-10);
- ctx.globalAlpha=1;ctx.shadowBlur=0;
-}
-
-function render(){
- requestAnimationFrame(render);
- ctx.clearRect(0,0,W,H);
- if(analyser){
-  analyser.smoothingTimeConstant=smoothing;
-  analyser.getByteFrequencyData(freq);
-  analyser.getByteTimeDomainData(wave);
-  let sum=0;
-  for(let v of wave){
-   let x=(v-128)/128;sum+=x*x;
-  }
-  let rms=Math.sqrt(sum/wave.length);
-  let target=Math.min(100,rms*1500*sensitivity);
-  level+=(target-level)*.3;
-
-  let nyquist=Math.min(20000,sampleRate/2);
-  $('low').textContent=Math.round(getBand(20,Math.min(250,nyquist))*100*sensitivity/2)+'%';
-  $('mid').textContent=Math.round(getBand(250,Math.min(4000,nyquist))*100*sensitivity/2)+'%';
-  $('high').textContent=Math.round(getBand(4000,nyquist)*100*sensitivity/2)+'%';
- }else{
-  level=0;
-  $('low').textContent='0%';$('mid').textContent='0%';$('high').textContent='0%';
- }
- $('level').textContent=Math.round(level)+'%';
- $('meter').style.width=Math.min(100,level)+'%';
-
- if(analyser){
-  if(mode==='spectrum')spectrum();
-  else if(mode==='circle')circle();
-  else if(mode==='wave')drawWave();
-  else drawParticles();
- }else{
-  for(let i=0;i<50;i++){
-   ctx.fillStyle=colors[i%5];ctx.globalAlpha=.4;
-   ctx.fillRect(i/50*W,H/2+Math.sin(i*.24+performance.now()/1000)*20,3,3);
-  }
-  ctx.globalAlpha=1;
- }
-}
-render();
-
-document.querySelectorAll('[data-mode]').forEach(b=>{
- b.onclick=()=>{
+document.querySelectorAll("[data-mode]").forEach(b=>{
+ b.addEventListener("click",()=>{
   mode=b.dataset.mode;
-  document.querySelectorAll('[data-mode]').forEach(x=>x.classList.toggle('active',x===b));
-  $('effectName').textContent=mode.toUpperCase()+(mode==='spectrum'?' · Hz':'');
-  particles=[];
- };
+  document.querySelectorAll("[data-mode]").forEach(x=>x.classList.toggle("active",x===b));
+ });
 });
 
-$('boost').oninput=e=>{
- boost=e.target.value/100;
- if(gainNode)gainNode.gain.setTargetAtTime(boost,audio.currentTime,.05);
- $('boostVal').textContent=e.target.value+'%';
-};
-$('sens').oninput=e=>{
- sensitivity=e.target.value/100;
- $('sensVal').textContent=e.target.value+'%';
-};
-$('smooth').oninput=e=>{
- smoothing=e.target.value/100;
- $('smoothVal').textContent=e.target.value+'%';
-};
-
-$('start').onclick=async()=>{
- $('start').disabled=true;
- $('message').textContent='マイクに接続しています...';
+document.getElementById("start").addEventListener("click",async()=>{
+ if(running){
+  location.reload();
+  return;
+ }
  try{
-  if(!navigator.mediaDevices?.getUserMedia)throw new Error('HTTPS接続が必要です');
-  stream=await navigator.mediaDevices.getUserMedia({
+  const stream=await navigator.mediaDevices.getUserMedia({
    audio:{
     echoCancellation:false,
     noiseSuppression:false,
     autoGainControl:false
    }
   });
-  audio=new(window.AudioContext||window.webkitAudioContext)();
-  await audio.resume();
-  sampleRate=audio.sampleRate;
-  binHz=sampleRate/4096;
-  source=audio.createMediaStreamSource(stream);
-  gainNode=audio.createGain();
-  gainNode.gain.value=boost;
-  analyser=audio.createAnalyser();
-  analyser.fftSize=4096;
+  audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  await audioCtx.resume();
+
+  source=audioCtx.createMediaStreamSource(stream);
+  gain=audioCtx.createGain();
+  gain.gain.value=5;
+
+  analyser=audioCtx.createAnalyser();
+  analyser.fftSize=8192;
   analyser.minDecibels=-100;
-  analyser.maxDecibels=-20;
-  analyser.smoothingTimeConstant=smoothing;
-  freq=new Uint8Array(analyser.frequencyBinCount);
-  wave=new Uint8Array(analyser.fftSize);
+  analyser.maxDecibels=-15;
+  analyser.smoothingTimeConstant=.35;
 
-  source.connect(gainNode);
-  gainNode.connect(analyser);
+  source.connect(gain);
+  gain.connect(analyser);
 
-  $('status').textContent='● LIVE';
-  $('start').textContent='● 接続中';
-  $('stop').disabled=false;
-  $('message').textContent='マイク増幅中。音楽を流して反応を確認してください。';
+  data=new Uint8Array(analyser.frequencyBinCount);
+  running=true;
+  status.textContent="● マイク接続中";
+  document.getElementById("start").textContent="接続中";
+  draw();
  }catch(e){
-  $('status').textContent='● ERROR';
-  $('message').textContent='マイクを使用できません: '+e.message;
-  $('start').disabled=false;
+  status.textContent="接続できません";
+  alert("マイクを使用できません。Safariのマイク許可を確認してください。\n"+e.message);
  }
-};
+});
 
-$('stop').onclick=()=>{
- if(stream)stream.getTracks().forEach(t=>t.stop());
- if(audio)audio.close();
- audio=null;stream=null;analyser=null;source=null;gainNode=null;
- $('status').textContent='● STANDBY';
- $('start').disabled=false;$('start').textContent='▶ マイク開始';
- $('stop').disabled=true;
- $('message').textContent='マイク停止中です。';
-};
+function getBand(min,max,boost){
+ const sr=audioCtx.sampleRate;
+ const hzPerBin=sr/analyser.fftSize;
+ const start=Math.max(1,Math.floor(min/hzPerBin));
+ const end=Math.min(data.length-1,Math.ceil(max/hzPerBin));
+ let sum=0,count=0;
+ for(let i=start;i<=end;i++){
+  const v=data[i]/255;
+  sum+=v*v;
+  count++;
+ }
+ const rms=count?Math.sqrt(sum/count):0;
+ return Math.min(1,Math.pow(rms,1.35)*boost*sensitivity*2.4);
+}
 
-$('full').onclick=async()=>{
- try{
-  if(!document.fullscreenElement)await document.documentElement.requestFullscreen();
-  else await document.exitFullscreen();
- }catch(e){$('message').textContent='全画面表示に対応していません。'}
-};
-})();
+function analyze(){
+ analyser.getByteFrequencyData(data);
+
+ const l=getBand(35,250,bassBoost);
+ const m=getBand(250,4000,1.0);
+ const h=getBand(4000,16000,trebleBoost);
+
+ low=low*smooth+l*(1-smooth);
+ mid=mid*smooth+m*(1-smooth);
+ high=high*smooth+h*(1-smooth);
+
+ updateMeter("low",low);
+ updateMeter("mid",mid);
+ updateMeter("high",high);
+}
+
+function updateMeter(name,value){
+ const percent=Math.round(value*100);
+ document.getElementById(name+"bar").style.width=percent+"%";
+ document.getElementById(name+"val").textContent=percent+"%";
+}
+
+function colorFor(freq){
+ if(freq<250)return "#6e8fff";
+ if(freq<2000)return "#a17dff";
+ return "#45d9e8";
+}
+
+function drawSpectrum(w,h){
+ const bins=data.length;
+ const minHz=20,maxHz=20000;
+ const bars=100;
+ const gap=2;
+ const bw=w/bars-gap;
+ for(let j=0;j<bars;j++){
+  const f1=minHz*Math.pow(maxHz/minHz,j/bars);
+  const f2=minHz*Math.pow(maxHz/minHz,(j+1)/bars);
+  const i1=Math.max(1,Math.floor(f1*analyser.fftSize/audioCtx.sampleRate));
+  const i2=Math.min(bins-1,Math.max(i1+1,Math.ceil(f2*analyser.fftSize/audioCtx.sampleRate)));
+  let sum=0,count=0;
+  for(let i=i1;i<=i2;i++){sum+=data[i];count++}
+  let v=count?sum/count/255:0;
+  const boost=(f1<250?bassBoost:f1<4000?1:trebleBoost);
+  v=Math.min(1,Math.pow(v,1.25)*boost*sensitivity*2.1);
+  const bh=v*(h*.85);
+  ctx.fillStyle=colorFor(f1);
+  ctx.globalAlpha=.9;
+  ctx.fillRect(j*(bw+gap),h-bh,bw,bh);
+ }
+ ctx.globalAlpha=1;
+}
+
+function drawCircle(w,h){
+ const cx=w/2,cy=h/2;
+ const radius=Math.min(w,h)*.22;
+ const count=180;
+ for(let i=0;i<count;i++){
+  const f=Math.floor(i/count*data.length);
+  const v=data[f]/255;
+  const angle=i/count*Math.PI*2;
+  const len=radius+v*sensitivity*180;
+  ctx.strokeStyle=colorFor(f*audioCtx.sampleRate/analyser.fftSize);
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.moveTo(cx+Math.cos(angle)*radius,cy+Math.sin(angle)*radius);
+  ctx.lineTo(cx+Math.cos(angle)*len,cy+Math.sin(angle)*len);
+  ctx.stroke();
+ }
+ ctx.beginPath();
+ ctx.arc(cx,cy,radius,0,Math.PI*2);
+ ctx.strokeStyle="#829fff";
+ ctx.lineWidth=2;
+ ctx.stroke();
+}
+
+function drawWave(w,h){
+ const step=Math.max(1,Math.floor(data.length/400));
+ ctx.beginPath();
+ for(let i=0;i<data.length;i+=step){
+  const x=i/data.length*w;
+  const y=h-(data[i]/255)*h*.9-h*.05;
+  if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+ }
+ ctx.strokeStyle="#82b9ff";
+ ctx.lineWidth=2;
+ ctx.stroke();
+}
+
+function drawParticles(w,h){
+ const energy=(low+mid+high)/3;
+ if(energy>.08&&particles.length<180){
+  for(let i=0;i<Math.ceil(energy*8);i++){
+   particles.push({
+    x:Math.random()*w,y:Math.random()*h,
+    vx:(Math.random()-.5)*2,vy:(Math.random()-.5)*2,
+    life:1,r:Math.random()*3+1
+   });
+  }
+ }
+ particles=particles.filter(p=>p.life>0);
+ for(const p of particles){
+  p.x+=p.vx;p.y+=p.vy;p.life-=.009;
+  ctx.globalAlpha=p.life;
+  ctx.fillStyle="#8caaff";
+  ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();
+ }
+ ctx.globalAlpha=1;
+}
+
+function draw(){
+ if(!running)return;
+ requestAnimationFrame(draw);
+ analyze();
+
+ const w=canvas.clientWidth,h=canvas.clientHeight;
+ ctx.clearRect(0,0,w,h);
+
+ if(mode==="spectrum")drawSpectrum(w,h);
+ if(mode==="circle")drawCircle(w,h);
+ if(mode==="wave")drawWave(w,h);
+ if(mode==="particles")drawParticles(w,h);
+}
 </script>
 </body>
 </html>
