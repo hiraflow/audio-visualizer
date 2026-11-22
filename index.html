@@ -7,9 +7,7 @@
 <title>Audio Visualizer</title>
 
 <style>
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 html {
   min-height: 100%;
@@ -36,9 +34,7 @@ body {
   margin: 0 auto;
 }
 
-header {
-  margin-bottom: 20px;
-}
+header { margin-bottom: 20px; }
 
 h1 {
   font-size: 25px;
@@ -117,13 +113,9 @@ button.start {
   padding: 14px;
 }
 
-button:disabled {
-  opacity: .5;
-}
+button:disabled { opacity: .5; }
 
-.setting {
-  margin: 17px 0;
-}
+.setting { margin: 17px 0; }
 
 .setting-head {
   display: flex;
@@ -178,12 +170,6 @@ input[type="range"] {
   transition: width .06s linear;
 }
 
-.meter-number {
-  text-align: right;
-  color: #aab8d2;
-  font-variant-numeric: tabular-nums;
-}
-
 .band-low { background: linear-gradient(90deg,#ff9b45,#ffca68); }
 .band-mid { background: linear-gradient(90deg,#3e8dff,#7c9fff); }
 .band-high { background: linear-gradient(90deg,#b66cff,#f17dff); }
@@ -228,25 +214,26 @@ input[type="range"] {
 </section>
 
 <section class="card">
+
   <div class="setting">
     <div class="setting-head">
       <span>入力レベル（マイク音量）</span>
-      <span class="setting-value" id="gainValue">100%</span>
+      <span class="setting-value" id="gainValue">200%</span>
     </div>
-    <input id="gainSlider" type="range" min="0" max="300" value="100" step="1">
+    <input id="gainSlider" type="range" min="100" max="300" value="200" step="1">
     <div class="note">
-      100%＝増幅なし。音量が小さい場合は数値を上げてください。
+      200%を標準として、100〜300%で増幅量を調整できます。
     </div>
   </div>
 
   <div class="setting">
     <div class="setting-head">
       <span>マイク感度（表示感度）</span>
-      <span class="setting-value" id="sensitivityValue">50%</span>
+      <span class="setting-value" id="sensitivityValue">70%</span>
     </div>
-    <input id="sensitivitySlider" type="range" min="0" max="100" value="50">
+    <input id="sensitivitySlider" type="range" min="20" max="100" value="70">
     <div class="note">
-      ビジュアルの反応の強さを調整します。
+      70%を標準として、ビジュアルの反応の強さを調整します。
     </div>
   </div>
 
@@ -257,6 +244,7 @@ input[type="range"] {
     </div>
     <input id="smoothSlider" type="range" min="0" max="95" value="65">
   </div>
+
 </section>
 
 <section class="card">
@@ -270,7 +258,7 @@ input[type="range"] {
   </div>
 
   <div class="note">
-    増幅前のマイク入力を表示しています。周囲の音やスピーカーからの音に反応します。
+    増幅前のマイク入力を表示しています。
   </div>
 </section>
 
@@ -345,9 +333,9 @@ let inputTimeData;
 let mode = "spectrum";
 let running = false;
 
-let sensitivity = 0.5;
+let sensitivity = 0.7;
 let smooth = 0.65;
-let inputGain = 1;
+let inputGain = 2;
 
 let smoothedLow = 0;
 let smoothedMid = 0;
@@ -427,7 +415,7 @@ startBtn.addEventListener("click", async () => {
     inputAnalyser.fftSize = 2048;
     inputAnalyser.smoothingTimeConstant = 0;
 
-    // ビジュアル用
+    // ビジュアル用の増幅
     gainNode = audioContext.createGain();
     gainNode.gain.value = inputGain;
 
@@ -437,7 +425,6 @@ startBtn.addEventListener("click", async () => {
     analyser.maxDecibels = -15;
     analyser.smoothingTimeConstant = 0.2;
 
-    // 入力を分岐
     source.connect(inputAnalyser);
     source.connect(gainNode);
     gainNode.connect(analyser);
@@ -452,6 +439,7 @@ startBtn.addEventListener("click", async () => {
     statusText.textContent = "マイク入力を取得中";
 
     draw();
+
   } catch (error) {
     console.error(error);
     statusText.textContent = "マイクに接続できませんでした";
@@ -470,9 +458,8 @@ function getInputLevel() {
   }
 
   const rms = Math.sqrt(sum / inputTimeData.length);
-
-  // 相対的な入力レベル表示
   const db = 20 * Math.log10(Math.max(rms, 0.00001));
+
   return Math.max(0, Math.min(100, (db + 60) * 2));
 }
 
@@ -558,10 +545,6 @@ function draw() {
   if (mode === "particles") drawParticles(width, height);
 }
 
-function getVisualValue(value) {
-  return Math.min(255, value * (sensitivity * 2));
-}
-
 function drawSpectrum(w, h) {
   const bars = 100;
   const gap = 2;
@@ -569,9 +552,7 @@ function drawSpectrum(w, h) {
 
   for (let i = 0; i < bars; i++) {
     const ratio = i / bars;
-    const freq = Math.floor(
-      Math.pow(12000 / 35, ratio) * 35
-    );
+    const freq = Math.floor(Math.pow(12000 / 35, ratio) * 35);
 
     const bin = Math.floor(
       freq / (audioContext.sampleRate / analyser.fftSize)
@@ -585,7 +566,6 @@ function drawSpectrum(w, h) {
 
     const level = Math.min(255, value * boost * sensitivity * 2);
     const barHeight = (level / 255) * h * 0.9;
-
     const hue = 210 + ratio * 100;
 
     ctx.fillStyle = `hsl(${hue}, 90%, 62%)`;
@@ -608,7 +588,7 @@ function drawCircle(w, h) {
 
   for (let i = 0; i < count; i++) {
     const index = Math.floor(i / count * frequencyData.length);
-    const value = getVisualValue(frequencyData[index]);
+    const value = frequencyData[index] * sensitivity * 2;
     const radius = baseRadius + value * 0.35;
 
     const angle = (i / count) * Math.PI * 2;
