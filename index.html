@@ -3,7 +3,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#080b16">
 <title>Audio Visualizer Pro</title>
 <style>
@@ -11,35 +11,37 @@
 body{
  margin:0;background:#080b16;color:#eef3ff;
  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
- overflow:hidden
 }
 header{padding:15px 18px;display:flex;justify-content:space-between;align-items:center}
 h1{font-size:18px;margin:0}
 #status{font-size:11px;color:#8292b5}
-main{padding:0 14px}
+main{padding:0 14px 25px}
 canvas{
- width:100%;height:48vh;display:block;
+ width:100%;height:40vh;min-height:220px;display:block;
  background:radial-gradient(ellipse at center,#151d38,#080b16 75%);
  border-radius:18px
 }
-.controls{margin-top:14px;display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.controls{margin-top:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 button{
  border:1px solid #303b5b;background:#151d35;color:white;
- padding:12px;border-radius:12px;font-size:13px
+ padding:12px 4px;border-radius:10px;font-size:12px
 }
 button.active{background:#334c91;border-color:#789cff}
-#start{background:#385bd0;border:0;font-weight:bold}
-.meters{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:15px}
-.meter{background:#131a2d;border-radius:12px;padding:10px}
+#start{grid-column:span 4;background:#385bd0;border:0;font-weight:bold}
+.meters{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:13px}
+.meter,.settings{background:#131a2d;border-radius:12px;padding:10px}
 .meter label{font-size:11px;color:#a8b5d2}
 .track{height:7px;background:#29334d;border-radius:8px;margin-top:8px;overflow:hidden}
-.fill{height:100%;width:0%;border-radius:8px;background:#8baaff}
+.fill{height:100%;width:0%;border-radius:8px;background:#8baaff;transition:width .04s}
 .value{font-size:17px;margin-top:5px;font-weight:600}
-.settings{margin-top:15px;background:#131a2d;padding:13px;border-radius:13px}
-.setting{margin:10px 0}
+.settings{margin-top:13px;padding:13px}
+.setting{margin:12px 0}
 .setting div{display:flex;justify-content:space-between;font-size:12px;color:#b8c5df}
 input[type=range]{width:100%;accent-color:#829fff}
-#freq{font-size:11px;color:#8292b5;text-align:center;margin-top:8px}
+#freq{font-size:11px;color:#8292b5;text-align:center;margin-top:9px}
+.input-meter{margin-top:13px;background:#131a2d;padding:13px;border-radius:12px}
+.input-head{display:flex;justify-content:space-between;font-size:12px;color:#b8c5df}
+.small{font-size:10px;color:#8292b5;margin-top:6px}
 </style>
 </head>
 <body>
@@ -47,6 +49,7 @@ input[type=range]{width:100%;accent-color:#829fff}
  <h1>Audio Visualizer Pro</h1>
  <span id="status">マイク未接続</span>
 </header>
+
 <main>
  <canvas id="visual"></canvas>
 
@@ -63,36 +66,48 @@ input[type=range]{width:100%;accent-color:#829fff}
    <label>LOW / 低音</label>
    <div class="track"><div class="fill" id="lowbar"></div></div>
    <div class="value" id="lowval">0%</div>
+   <div class="small">35〜250Hz</div>
   </div>
   <div class="meter">
    <label>MID / 中音</label>
    <div class="track"><div class="fill" id="midbar"></div></div>
    <div class="value" id="midval">0%</div>
+   <div class="small">250Hz〜3.5kHz</div>
   </div>
   <div class="meter">
    <label>HIGH / 高音</label>
    <div class="track"><div class="fill" id="highbar"></div></div>
    <div class="value" id="highval">0%</div>
+   <div class="small">3.5〜12kHz</div>
   </div>
  </div>
 
- <div id="freq">周波数解析：20 Hz - 20 kHz</div>
+ <div class="input-meter">
+  <div class="input-head">
+   <span>実際のマイク入力レベル</span>
+   <strong id="inputval">0%</strong>
+  </div>
+  <div class="track"><div class="fill" id="inputbar"></div></div>
+  <div class="small">マイクが拾っている音の強さ</div>
+ </div>
+
+ <div id="freq">周波数解析：35Hz〜12kHz</div>
 
  <div class="settings">
   <div class="setting">
-   <div><span>表示感度</span><span id="sensval">150%</span></div>
-   <input id="sensitivity" type="range" min="50" max="300" value="150">
+   <div><span>マイク感度（表示感度）</span><strong id="sensval">50%</strong></div>
+   <input id="sensitivity" type="range" min="0" max="100" value="50">
   </div>
   <div class="setting">
-   <div><span>低音ブースト</span><span id="bassval">180%</span></div>
-   <input id="bass" type="range" min="50" max="350" value="180">
+   <div><span>低音ブースト</span><strong id="bassval">150%</strong></div>
+   <input id="bass" type="range" min="50" max="300" value="150">
   </div>
   <div class="setting">
-   <div><span>中高音ブースト</span><span id="trebleval">150%</span></div>
-   <input id="treble" type="range" min="50" max="350" value="150">
+   <div><span>高音ブースト</span><strong id="trebleval">130%</strong></div>
+   <input id="treble" type="range" min="50" max="300" value="130">
   </div>
   <div class="setting">
-   <div><span>滑らかさ</span><span id="smoothval">65%</span></div>
+   <div><span>滑らかさ</span><strong id="smoothval">65%</strong></div>
    <input id="smooth" type="range" min="10" max="95" value="65">
   </div>
  </div>
@@ -101,14 +116,18 @@ input[type=range]{width:100%;accent-color:#829fff}
 <script>
 const canvas=document.getElementById("visual");
 const ctx=canvas.getContext("2d");
-const status=document.getElementById("status");
 
-let audioCtx,analyser,data,source,gain;
-let mode="spectrum";
+let audioCtx,analyser,source,gain;
+let freqData,timeData;
 let running=false;
+let mode="spectrum";
+
 let low=0,mid=0,high=0;
 let particles=[];
-let sensitivity=1.5,bassBoost=1.8,trebleBoost=1.5;
+
+let sensitivity=.5;
+let bassBoost=1.5;
+let trebleBoost=1.3;
 let smooth=.65;
 
 function resize(){
@@ -120,34 +139,33 @@ function resize(){
 window.addEventListener("resize",resize);
 resize();
 
-function rangeValue(id){
- return Number(document.getElementById(id).value)/100;
-}
-function setupSlider(id,label,callback){
+function slider(id,label,callback,format=v=>Math.round(v*100)+"%"){
  const el=document.getElementById(id);
  const out=document.getElementById(label);
  el.addEventListener("input",()=>{
-  out.textContent=el.value+"%";
-  callback(Number(el.value)/100);
+  const v=Number(el.value)/100;
+  callback(v);
+  out.textContent=format(Number(el.value));
  });
 }
-setupSlider("sensitivity","sensval",v=>sensitivity=v);
-setupSlider("bass","bassval",v=>bassBoost=v);
-setupSlider("treble","trebleval",v=>trebleBoost=v);
-setupSlider("smooth","smoothval",v=>smooth=v);
+
+slider("sensitivity","sensval",v=>sensitivity=v,v=>v+"%");
+slider("bass","bassval",v=>bassBoost=v,v=>v+"%");
+slider("treble","trebleval",v=>trebleBoost=v,v=>v+"%");
+slider("smooth","smoothval",v=>smooth=v,v=>v+"%");
 
 document.querySelectorAll("[data-mode]").forEach(b=>{
  b.addEventListener("click",()=>{
   mode=b.dataset.mode;
-  document.querySelectorAll("[data-mode]").forEach(x=>x.classList.toggle("active",x===b));
+  document.querySelectorAll("[data-mode]").forEach(x=>{
+   x.classList.toggle("active",x===b);
+  });
  });
 });
 
 document.getElementById("start").addEventListener("click",async()=>{
- if(running){
-  location.reload();
-  return;
- }
+ if(running)return;
+
  try{
   const stream=await navigator.mediaDevices.getUserMedia({
    audio:{
@@ -156,116 +174,185 @@ document.getElementById("start").addEventListener("click",async()=>{
     autoGainControl:false
    }
   });
-  audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
   await audioCtx.resume();
 
   source=audioCtx.createMediaStreamSource(stream);
   gain=audioCtx.createGain();
+
+  // マイク入力の増幅は従来と同じ5倍
   gain.gain.value=5;
 
   analyser=audioCtx.createAnalyser();
   analyser.fftSize=8192;
   analyser.minDecibels=-100;
   analyser.maxDecibels=-15;
-  analyser.smoothingTimeConstant=.35;
+  analyser.smoothingTimeConstant=.2;
 
   source.connect(gain);
   gain.connect(analyser);
 
-  data=new Uint8Array(analyser.frequencyBinCount);
+  freqData=new Uint8Array(analyser.frequencyBinCount);
+  timeData=new Uint8Array(analyser.fftSize);
+
   running=true;
-  status.textContent="● マイク接続中";
-  document.getElementById("start").textContent="接続中";
+  document.getElementById("status").textContent="● LIVE";
+  document.getElementById("start").textContent="マイク接続中";
+
   draw();
  }catch(e){
-  status.textContent="接続できません";
-  alert("マイクを使用できません。Safariのマイク許可を確認してください。\n"+e.message);
+  document.getElementById("status").textContent="接続エラー";
+  alert("マイクを使用できません。\nSafariのマイク許可を確認してください。\n"+e.message);
  }
 });
 
-function getBand(min,max,boost){
- const sr=audioCtx.sampleRate;
- const hzPerBin=sr/analyser.fftSize;
- const start=Math.max(1,Math.floor(min/hzPerBin));
- const end=Math.min(data.length-1,Math.ceil(max/hzPerBin));
- let sum=0,count=0;
- for(let i=start;i<=end;i++){
-  const v=data[i]/255;
-  sum+=v*v;
-  count++;
- }
- const rms=count?Math.sqrt(sum/count):0;
- return Math.min(1,Math.pow(rms,1.35)*boost*sensitivity*2.4);
+function clamp(v,min=0,max=1){
+ return Math.max(min,Math.min(max,v));
 }
 
-function analyze(){
- analyser.getByteFrequencyData(data);
+// デシベルから音の強さを計算
+function getBand(minHz,maxHz,boost){
+ const binHz=audioCtx.sampleRate/analyser.fftSize;
+ const start=Math.max(1,Math.floor(minHz/binHz));
+ const end=Math.min(freqData.length-1,Math.ceil(maxHz/binHz));
 
- const l=getBand(35,250,bassBoost);
- const m=getBand(250,4000,1.0);
- const h=getBand(4000,16000,trebleBoost);
+ let sum=0,count=0;
 
- low=low*smooth+l*(1-smooth);
- mid=mid*smooth+m*(1-smooth);
- high=high*smooth+h*(1-smooth);
+ for(let i=start;i<=end;i++){
+  const db=analyser.minDecibels+
+   (freqData[i]/255)*(analyser.maxDecibels-analyser.minDecibels);
 
- updateMeter("low",low);
- updateMeter("mid",mid);
- updateMeter("high",high);
+  const amplitude=Math.pow(10,db/20);
+  sum+=amplitude*amplitude;
+  count++;
+ }
+
+ const rms=count?Math.sqrt(sum/count):0;
+ const db=20*Math.log10(Math.max(rms,0.000001));
+
+ // -78dB以下はほぼ無音として扱う
+ let level=clamp((db+78)/60);
+
+ // 感度50%を基準に表示を調整
+ const sensitivityGain=sensitivity*2;
+ level=clamp(level*sensitivityGain*boost);
+
+ return level;
+}
+
+function getInputLevel(){
+ analyser.getByteTimeDomainData(timeData);
+
+ let sum=0;
+ for(let i=0;i<timeData.length;i++){
+  const v=(timeData[i]-128)/128;
+  sum+=v*v;
+ }
+ const rms=Math.sqrt(sum/timeData.length);
+ const db=20*Math.log10(Math.max(rms,0.000001));
+
+ return Math.round(clamp((db+60)/54)*100);
 }
 
 function updateMeter(name,value){
- const percent=Math.round(value*100);
+ const percent=Math.round(clamp(value)*100);
  document.getElementById(name+"bar").style.width=percent+"%";
  document.getElementById(name+"val").textContent=percent+"%";
 }
 
-function colorFor(freq){
- if(freq<250)return "#6e8fff";
- if(freq<2000)return "#a17dff";
+function analyze(){
+ analyser.getByteFrequencyData(freqData);
+
+ const l=getBand(35,250,bassBoost);
+ const m=getBand(250,3500,1);
+ const h=getBand(3500,12000,trebleBoost);
+
+ // 立ち上がりを速く、減衰を滑らかに
+ const attack=.25;
+ const release=.82;
+
+ function smoothValue(oldValue,newValue){
+  const factor=newValue>oldValue?attack:release;
+  return oldValue*factor+newValue*(1-factor);
+ }
+
+ low=smoothValue(low,l);
+ mid=smoothValue(mid,m);
+ high=smoothValue(high,h);
+
+ updateMeter("low",low);
+ updateMeter("mid",mid);
+ updateMeter("high",high);
+
+ const input=getInputLevel();
+ document.getElementById("inputbar").style.width=input+"%";
+ document.getElementById("inputval").textContent=input+"%";
+}
+
+function frequencyColor(hz){
+ if(hz<250)return "#6e8fff";
+ if(hz<3500)return "#a17dff";
  return "#45d9e8";
 }
 
 function drawSpectrum(w,h){
- const bins=data.length;
- const minHz=20,maxHz=20000;
- const bars=100;
+ const bars=110;
  const gap=2;
  const bw=w/bars-gap;
+ const minHz=35,maxHz=12000;
+
  for(let j=0;j<bars;j++){
   const f1=minHz*Math.pow(maxHz/minHz,j/bars);
   const f2=minHz*Math.pow(maxHz/minHz,(j+1)/bars);
+
   const i1=Math.max(1,Math.floor(f1*analyser.fftSize/audioCtx.sampleRate));
-  const i2=Math.min(bins-1,Math.max(i1+1,Math.ceil(f2*analyser.fftSize/audioCtx.sampleRate)));
+  const i2=Math.min(freqData.length-1,
+   Math.max(i1+1,Math.ceil(f2*analyser.fftSize/audioCtx.sampleRate)));
+
   let sum=0,count=0;
-  for(let i=i1;i<=i2;i++){sum+=data[i];count++}
-  let v=count?sum/count/255:0;
-  const boost=(f1<250?bassBoost:f1<4000?1:trebleBoost);
-  v=Math.min(1,Math.pow(v,1.25)*boost*sensitivity*2.1);
-  const bh=v*(h*.85);
-  ctx.fillStyle=colorFor(f1);
-  ctx.globalAlpha=.9;
+
+  for(let i=i1;i<=i2;i++){
+   const db=analyser.minDecibels+
+    (freqData[i]/255)*(analyser.maxDecibels-analyser.minDecibels);
+   sum+=Math.pow(10,db/20)**2;
+   count++;
+  }
+
+  const rms=count?Math.sqrt(sum/count):0;
+  const db=20*Math.log10(Math.max(rms,.000001));
+  let v=clamp((db+78)/60*sensitivity*2);
+
+  if(f1<250)v*=bassBoost;
+  else if(f1>=3500)v*=trebleBoost;
+
+  v=clamp(v);
+  const bh=v*h*.88;
+
+  ctx.fillStyle=frequencyColor(f1);
   ctx.fillRect(j*(bw+gap),h-bh,bw,bh);
  }
- ctx.globalAlpha=1;
 }
 
 function drawCircle(w,h){
  const cx=w/2,cy=h/2;
  const radius=Math.min(w,h)*.22;
  const count=180;
+
  for(let i=0;i<count;i++){
-  const f=Math.floor(i/count*data.length);
-  const v=data[f]/255;
+  const index=Math.floor(i/count*freqData.length);
+  const v=freqData[index]/255;
   const angle=i/count*Math.PI*2;
-  const len=radius+v*sensitivity*180;
-  ctx.strokeStyle=colorFor(f*audioCtx.sampleRate/analyser.fftSize);
+  const length=radius+v*sensitivity*180;
+
+  ctx.strokeStyle=frequencyColor(index*audioCtx.sampleRate/analyser.fftSize);
   ctx.lineWidth=2;
   ctx.beginPath();
   ctx.moveTo(cx+Math.cos(angle)*radius,cy+Math.sin(angle)*radius);
-  ctx.lineTo(cx+Math.cos(angle)*len,cy+Math.sin(angle)*len);
+  ctx.lineTo(cx+Math.cos(angle)*length,cy+Math.sin(angle)*length);
   ctx.stroke();
  }
+
  ctx.beginPath();
  ctx.arc(cx,cy,radius,0,Math.PI*2);
  ctx.strokeStyle="#829fff";
@@ -274,13 +361,18 @@ function drawCircle(w,h){
 }
 
 function drawWave(w,h){
- const step=Math.max(1,Math.floor(data.length/400));
+ const step=Math.max(1,Math.floor(timeData.length/500));
+
+ analyser.getByteTimeDomainData(timeData);
  ctx.beginPath();
- for(let i=0;i<data.length;i+=step){
-  const x=i/data.length*w;
-  const y=h-(data[i]/255)*h*.9-h*.05;
-  if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+
+ for(let i=0;i<timeData.length;i+=step){
+  const x=i/timeData.length*w;
+  const y=(timeData[i]/255)*h;
+  if(i===0)ctx.moveTo(x,y);
+  else ctx.lineTo(x,y);
  }
+
  ctx.strokeStyle="#82b9ff";
  ctx.lineWidth=2;
  ctx.stroke();
@@ -288,21 +380,29 @@ function drawWave(w,h){
 
 function drawParticles(w,h){
  const energy=(low+mid+high)/3;
+
  if(energy>.08&&particles.length<180){
   for(let i=0;i<Math.ceil(energy*8);i++){
    particles.push({
     x:Math.random()*w,y:Math.random()*h,
-    vx:(Math.random()-.5)*2,vy:(Math.random()-.5)*2,
+    vx:(Math.random()-.5)*2,
+    vy:(Math.random()-.5)*2,
     life:1,r:Math.random()*3+1
    });
   }
  }
+
  particles=particles.filter(p=>p.life>0);
+
  for(const p of particles){
-  p.x+=p.vx;p.y+=p.vy;p.life-=.009;
+  p.x+=p.vx;
+  p.y+=p.vy;
+  p.life-=.009;
   ctx.globalAlpha=p.life;
   ctx.fillStyle="#8caaff";
-  ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();
+  ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+  ctx.fill();
  }
  ctx.globalAlpha=1;
 }
@@ -310,9 +410,11 @@ function drawParticles(w,h){
 function draw(){
  if(!running)return;
  requestAnimationFrame(draw);
+
  analyze();
 
- const w=canvas.clientWidth,h=canvas.clientHeight;
+ const w=canvas.clientWidth;
+ const h=canvas.clientHeight;
  ctx.clearRect(0,0,w,h);
 
  if(mode==="spectrum")drawSpectrum(w,h);
