@@ -3,224 +3,254 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Audio Visualizer</title>
 
 <style>
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
 
-html {
+html, body {
+  margin: 0;
   min-height: 100%;
-  overflow-y: auto;
+  background: #080c16;
+  color: #edf2ff;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 body {
-  margin: 0;
-  min-height: 100vh;
-  min-height: 100dvh;
-  padding: 20px 16px calc(35px + env(safe-area-inset-bottom));
-  background: #090b12;
-  color: #fff;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  padding: 16px;
   overflow-x: hidden;
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
 }
 
 .container {
   width: 100%;
-  max-width: 850px;
+  max-width: 900px;
   margin: 0 auto;
 }
 
-header { margin-bottom: 20px; }
+header {
+  margin-bottom: 16px;
+}
 
-h1 {
-  font-size: 25px;
+header h1 {
+  font-size: 22px;
   margin: 0 0 5px;
   letter-spacing: 1px;
 }
 
-.subtitle {
-  color: #8992a8;
+header p {
+  color: #7f8ba8;
   font-size: 12px;
-}
-
-.card {
-  background: #141925;
-  border: 1px solid #242c3c;
-  border-radius: 17px;
-  padding: 16px;
-  margin-bottom: 15px;
+  margin: 0;
 }
 
 .visual-card {
   position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #080c16;
+  border: 1px solid #202b43;
+  box-shadow: 0 10px 40px #0006;
+  margin-bottom: 16px;
 }
 
 .visual-area {
-  width: 100%;
-  height: clamp(220px, 38vh, 360px);
-  min-height: 220px;
   position: relative;
-  background: #080c16;
-  border: 1px solid #202a3d;
-  border-radius: 13px;
+  width: 100%;
+  height: 340px;
+  min-height: 240px;
   overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 100%, #14264b 0%, #0a1020 48%, #080c16 100%);
 }
 
 canvas {
-  display: block;
   width: 100%;
   height: 100%;
+  display: block;
 }
-
-.status {
-  color: #8e9ab2;
-  font-size: 12px;
-  margin-top: 12px;
-  text-align: center;
-}
-
-.controls {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-top: 14px;
-}
-
-button {
-  border: 1px solid #303b50;
-  border-radius: 10px;
-  padding: 11px 5px;
-  color: #c9d2e5;
-  background: #1c2535;
-  font-size: 12px;
-  cursor: pointer;
-  min-width: 0;
-}
-
-button.active {
-  background: #315be5;
-  border-color: #5278ff;
-  color: white;
-}
-
-button.start {
-  grid-column: span 4;
-  background: #315be5;
-  border-color: #5278ff;
-  color: white;
-  font-size: 14px;
-  font-weight: bold;
-  padding: 14px;
-}
-
-button:disabled { opacity: .5; }
 
 .view-button {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 14px;
+  right: 14px;
   z-index: 10;
-  background: rgba(25, 35, 55, .88);
-  border: 1px solid #52627f;
+  border: 1px solid #ffffff25;
+  background: #101a30cc;
   color: white;
-  padding: 9px 13px;
-  border-radius: 9px;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
   backdrop-filter: blur(10px);
 }
 
-.setting { margin: 17px 0; }
+.status {
+  padding: 12px 16px;
+  color: #a5b4d3;
+  font-size: 12px;
+  border-top: 1px solid #ffffff10;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #64748b;
+  margin-right: 7px;
+}
+
+.status-dot.active {
+  background: #36e6ae;
+  box-shadow: 0 0 10px #36e6ae;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+button {
+  cursor: pointer;
+}
+
+.main-button {
+  flex: 1;
+  min-width: 130px;
+  padding: 14px;
+  border: 0;
+  border-radius: 12px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #3568ed, #7548d9);
+}
+
+.secondary-button {
+  flex: 1;
+  min-width: 130px;
+  padding: 14px;
+  border: 1px solid #34415d;
+  border-radius: 12px;
+  color: #dce7ff;
+  font-size: 14px;
+  background: #172238;
+}
+
+.menu-panel {
+  display: block;
+}
+
+.card {
+  background: #111a2c;
+  border: 1px solid #24324c;
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 14px;
+}
+
+.card h2 {
+  font-size: 15px;
+  margin: 0 0 18px;
+}
+
+.setting {
+  margin-bottom: 20px;
+}
+
+.setting:last-child {
+  margin-bottom: 0;
+}
 
 .setting-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 9px;
   font-size: 13px;
+  margin-bottom: 10px;
+  color: #c9d5ee;
 }
 
 .setting-value {
-  color: #7fa4ff;
-  font-weight: bold;
+  color: #7ea9ff;
   font-variant-numeric: tabular-nums;
 }
 
 input[type="range"] {
   width: 100%;
-  accent-color: #6389ff;
-  height: 25px;
-  cursor: pointer;
-}
-
-.note {
-  color: #8490a6;
-  font-size: 11px;
-  line-height: 1.6;
-  margin-top: 5px;
+  accent-color: #668fff;
+  height: 6px;
 }
 
 .meter-row {
-  display: grid;
-  grid-template-columns: 75px 1fr 40px;
-  align-items: center;
-  gap: 9px;
-  margin: 13px 0;
+  margin: 14px 0;
+}
+
+.meter-head {
+  display: flex;
+  justify-content: space-between;
   font-size: 12px;
+  color: #b9c6df;
+  margin-bottom: 7px;
 }
 
 .meter-bg {
   height: 9px;
-  background: #252e40;
   border-radius: 20px;
+  background: #26334c;
   overflow: hidden;
 }
 
 .meter-fill {
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, #3977ff, #54e6d0);
   border-radius: 20px;
   transition: width .06s linear;
+  background: linear-gradient(90deg, #3977ff, #36e6c0);
+  box-shadow: 0 0 10px #398bff80;
 }
 
-.band-low {
-  background: linear-gradient(90deg,#ff9b45,#ffca68);
+.frequency-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
 }
 
-.band-mid {
-  background: linear-gradient(90deg,#3e8dff,#7c9fff);
+.frequency-item {
+  min-width: 0;
 }
 
-.band-high {
-  background: linear-gradient(90deg,#b66cff,#f17dff);
+.frequency-item .meter-bg {
+  height: 7px;
 }
 
-.frequency-label {
-  color: #8d9bb5;
+.frequency-item .meter-fill {
+  background: linear-gradient(90deg, #4779ff, #b17aff);
+}
+
+.frequency-item:nth-child(2) .meter-fill {
+  background: linear-gradient(90deg, #29c6d8, #5b8cff);
+}
+
+.frequency-item:nth-child(3) .meter-fill {
+  background: linear-gradient(90deg, #a16bff, #ff78bc);
+}
+
+.frequency-item small {
+  display: block;
   font-size: 11px;
-  margin-top: 2px;
+  color: #8796b5;
+  margin-top: 6px;
 }
 
-.menu-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
+/* Fullscreen */
 
-.menu-heading strong {
-  font-size: 14px;
-}
-
-.menu-close {
-  display: none;
-}
-
-/* 全画面モード */
 body.fullscreen-mode {
   padding: 0;
   overflow: hidden;
@@ -259,22 +289,11 @@ body.fullscreen-mode {
   border-radius: 0;
 }
 
-.fullscreen-mode canvas {
-  width: 100%;
-  height: 100%;
-}
-
 .fullscreen-mode .status,
 .fullscreen-mode .controls {
   display: none;
 }
 
-.fullscreen-mode .view-button {
-  top: calc(12px + env(safe-area-inset-top));
-  right: 12px;
-}
-
-/* 全画面中のメニュー */
 .fullscreen-mode .menu-panel {
   display: none;
 }
@@ -289,27 +308,25 @@ body.fullscreen-mode {
   width: min(360px, calc(100vw - 24px));
   max-height: none;
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  background: #141925;
-  border: 1px solid #39465f;
-  border-radius: 15px;
-  padding: 15px;
-  box-shadow: 0 10px 40px rgba(0,0,0,.55);
+  padding: 8px;
+  background: #0c1425ee;
+  border: 1px solid #ffffff25;
+  border-radius: 16px;
+  backdrop-filter: blur(18px);
 }
 
-.fullscreen-mode .menu-close {
-  display: block;
+.fullscreen-mode .menu-panel .card {
+  background: #111a2cf2;
 }
 
-@media(max-width: 420px) {
+@media (max-width: 600px) {
   body {
-    padding-left: 12px;
-    padding-right: 12px;
+    padding: 10px;
   }
 
-  .card { padding: 13px; }
-  .controls { gap: 6px; }
-  button { font-size: 11px; }
+  .visual-area {
+    height: 290px;
+  }
 }
 </style>
 </head>
@@ -319,33 +336,29 @@ body.fullscreen-mode {
 
 <header>
   <h1>Audio Visualizer</h1>
-  <div class="subtitle">Microphone Audio Visualization</div>
+  <p>Microphone Spectrum Analyzer</p>
 </header>
 
-<section class="card visual-card">
-  <div class="visual-area">
+<div class="visual-card">
+  <div class="visual-area" id="visualArea">
     <canvas id="visualizer"></canvas>
     <button class="view-button" id="viewBtn">全画面</button>
   </div>
-
-  <div class="status" id="status">マイクを開始してください</div>
-
-  <div class="controls">
-    <button class="start" id="startBtn">マイクを開始</button>
-    <button class="mode active" data-mode="spectrum">Spectrum</button>
-    <button class="mode" data-mode="circle">Circle</button>
-    <button class="mode" data-mode="wave">Wave</button>
-    <button class="mode" data-mode="particles">Particles</button>
+  <div class="status">
+    <span class="status-dot" id="statusDot"></span>
+    <span id="statusText">マイク未接続</span>
   </div>
-</section>
+</div>
+
+<div class="controls">
+  <button class="main-button" id="startBtn">マイク開始</button>
+  <button class="secondary-button" id="reconnectBtn">マイク再取得</button>
+</div>
 
 <div class="menu-panel" id="menuPanel">
 
-  <section class="card">
-    <div class="menu-heading">
-      <strong>設定</strong>
-      <button class="menu-close" id="menuCloseBtn">閉じる</button>
-    </div>
+  <div class="card">
+    <h2>ビジュアル設定</h2>
 
     <div class="setting">
       <div class="setting-head">
@@ -353,85 +366,59 @@ body.fullscreen-mode {
         <span class="setting-value" id="gainValue">50%</span>
       </div>
       <input id="gainSlider" type="range" min="0" max="100" value="50">
-      <div class="note">
-        50%が従来の200%相当。0〜100%で増幅量を調整します。
-      </div>
     </div>
 
     <div class="setting">
       <div class="setting-head">
-        <span>マイク感度（表示感度）</span>
+        <span>表示感度</span>
         <span class="setting-value" id="sensitivityValue">70%</span>
       </div>
       <input id="sensitivitySlider" type="range" min="0" max="100" value="70">
-      <div class="note">
-        ビジュアルの反応の強さを調整します。
-      </div>
     </div>
 
     <div class="setting">
       <div class="setting-head">
-        <span>表示の滑らかさ</span>
+        <span>滑らかさ</span>
         <span class="setting-value" id="smoothValue">65%</span>
       </div>
       <input id="smoothSlider" type="range" min="0" max="95" value="65">
     </div>
-  </section>
+  </div>
 
-  <section class="card">
-    <div class="setting-head">
-      <strong>マイク入力メーター</strong>
-      <span class="setting-value" id="inputValue">0%</span>
+  <div class="card">
+    <h2>マイク入力レベル</h2>
+    <div class="meter-head">
+      <span>Input</span>
+      <span id="inputValue">0%</span>
     </div>
-
-    <div class="meter-bg" style="height:13px">
+    <div class="meter-bg">
       <div class="meter-fill" id="inputMeter"></div>
     </div>
+  </div>
 
-    <div class="note">
-      増幅前のマイク入力を表示しています。
-    </div>
-  </section>
+  <div class="card">
+    <h2>周波数レベル</h2>
 
-  <section class="card">
-    <div class="setting-head">
-      <strong>周波数別レベル</strong>
-      <span class="frequency-label">Hz</span>
-    </div>
-
-    <div class="meter-row">
-      <span>低音</span>
-      <div>
-        <div class="meter-bg">
-          <div class="meter-fill band-low" id="lowMeter"></div>
-        </div>
-        <div class="frequency-label">35–250 Hz</div>
+    <div class="frequency-grid">
+      <div class="frequency-item">
+        <div class="meter-head"><span>Low</span><span id="lowValue">0%</span></div>
+        <div class="meter-bg"><div class="meter-fill" id="lowMeter"></div></div>
+        <small>35–250 Hz</small>
       </div>
-      <span class="meter-number" id="lowValue">0%</span>
-    </div>
 
-    <div class="meter-row">
-      <span>中音</span>
-      <div>
-        <div class="meter-bg">
-          <div class="meter-fill band-mid" id="midMeter"></div>
-        </div>
-        <div class="frequency-label">250–3500 Hz</div>
+      <div class="frequency-item">
+        <div class="meter-head"><span>Mid</span><span id="midValue">0%</span></div>
+        <div class="meter-bg"><div class="meter-fill" id="midMeter"></div></div>
+        <small>250–3500 Hz</small>
       </div>
-      <span class="meter-number" id="midValue">0%</span>
-    </div>
 
-    <div class="meter-row">
-      <span>高音</span>
-      <div>
-        <div class="meter-bg">
-          <div class="meter-fill band-high" id="highMeter"></div>
-        </div>
-        <div class="frequency-label">3500–12000 Hz</div>
+      <div class="frequency-item">
+        <div class="meter-head"><span>High</span><span id="highValue">0%</span></div>
+        <div class="meter-bg"><div class="meter-fill" id="highMeter"></div></div>
+        <small>3500–12000 Hz</small>
       </div>
-      <span class="meter-number" id="highValue">0%</span>
     </div>
-  </section>
+  </div>
 
 </div>
 </div>
@@ -441,143 +428,130 @@ const canvas = document.getElementById("visualizer");
 const ctx = canvas.getContext("2d");
 
 const startBtn = document.getElementById("startBtn");
-const statusText = document.getElementById("status");
+const reconnectBtn = document.getElementById("reconnectBtn");
 const viewBtn = document.getElementById("viewBtn");
-const menuCloseBtn = document.getElementById("menuCloseBtn");
 
 const gainSlider = document.getElementById("gainSlider");
 const sensitivitySlider = document.getElementById("sensitivitySlider");
 const smoothSlider = document.getElementById("smoothSlider");
 
-let audioContext;
-let stream;
-let source;
-let gainNode;
-let analyser;
-let inputAnalyser;
+const inputMeter = document.getElementById("inputMeter");
+const lowMeter = document.getElementById("lowMeter");
+const midMeter = document.getElementById("midMeter");
+const highMeter = document.getElementById("highMeter");
 
-let frequencyData;
-let timeData;
-let inputTimeData;
+const inputValue = document.getElementById("inputValue");
+const lowValue = document.getElementById("lowValue");
+const midValue = document.getElementById("midValue");
+const highValue = document.getElementById("highValue");
 
-let mode = "spectrum";
-let running = false;
-let menuOpen = false;
+const statusText = document.getElementById("statusText");
+const statusDot = document.getElementById("statusDot");
 
-let sensitivity = 0.7;
-let smooth = 0.65;
-let inputGain = 2;
+let audioContext = null;
+let source = null;
+let gainNode = null;
+let analyser = null;
+let inputAnalyser = null;
+let stream = null;
 
-let smoothedLow = 0;
-let smoothedMid = 0;
-let smoothedHigh = 0;
+let frequencyData = null;
+let inputData = null;
 
+let bars = [];
+let peaks = [];
 let particles = [];
 
-/* キャンバスサイズ */
+let smoothBands = { low: 0, mid: 0, high: 0 };
+let currentBass = 0;
+let animationFrame = null;
+
+let width = 0;
+let height = 0;
+let dpr = 1;
+
 function resizeCanvas() {
   const rect = canvas.getBoundingClientRect();
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-  canvas.width = Math.max(1, Math.floor(rect.width * dpr));
-  canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  width = rect.width;
+  height = rect.height;
+
+  canvas.width = Math.round(width * dpr);
+  canvas.height = Math.round(height * dpr);
 
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const count = Math.max(32, Math.floor(width / 7));
+
+  bars = Array(count).fill(0);
+  peaks = Array(count).fill(0);
 }
 
 const resizeObserver = new ResizeObserver(resizeCanvas);
-resizeObserver.observe(canvas);
+resizeObserver.observe(document.getElementById("visualArea"));
 window.addEventListener("resize", resizeCanvas);
-resizeCanvas();
 
-/* 全画面・メニュー切り替え */
-function updateView() {
-  const fullscreen = document.body.classList.contains("fullscreen-mode");
-  const open = document.body.classList.contains("menu-open");
-
-  if (!fullscreen) {
-    viewBtn.textContent = "全画面";
-  } else {
-    viewBtn.textContent = open ? "メニューを閉じる" : "メニュー";
-  }
-
-  requestAnimationFrame(resizeCanvas);
-}
-
-viewBtn.addEventListener("click", () => {
-  const fullscreen = document.body.classList.contains("fullscreen-mode");
-
-  if (!fullscreen) {
-    document.body.classList.add("fullscreen-mode");
-    document.body.classList.remove("menu-open");
-  } else {
-    document.body.classList.toggle("menu-open");
-  }
-
-  updateView();
-});
-
-menuCloseBtn.addEventListener("click", () => {
-  document.body.classList.remove("menu-open");
-  updateView();
-});
-
-/* 入力レベル */
 function getGainFromPercent(percent) {
-  if (percent <= 50) {
-    return percent / 50 * 2;
-  }
-
+  if (percent <= 50) return percent / 50 * 2;
   return 2 + (percent - 50) / 50;
 }
 
-gainSlider.addEventListener("input", () => {
-  const percent = Number(gainSlider.value);
+function updateSettings() {
+  document.getElementById("gainValue").textContent =
+    gainSlider.value + "%";
 
-  inputGain = getGainFromPercent(percent);
-  document.getElementById("gainValue").textContent = percent + "%";
-
-  if (gainNode && audioContext) {
-    gainNode.gain.setTargetAtTime(
-      inputGain,
-      audioContext.currentTime,
-      0.03
-    );
-  }
-});
-
-/* 表示感度 */
-sensitivitySlider.addEventListener("input", () => {
-  sensitivity = Number(sensitivitySlider.value) / 100;
   document.getElementById("sensitivityValue").textContent =
     sensitivitySlider.value + "%";
-});
 
-/* 滑らかさ */
-smoothSlider.addEventListener("input", () => {
-  smooth = Number(smoothSlider.value) / 100;
   document.getElementById("smoothValue").textContent =
     smoothSlider.value + "%";
-});
 
-/* ビジュアル切り替え */
-document.querySelectorAll(".mode").forEach(button => {
-  button.addEventListener("click", () => {
-    document.querySelectorAll(".mode").forEach(b =>
-      b.classList.remove("active")
+  if (gainNode) {
+    gainNode.gain.setTargetAtTime(
+      getGainFromPercent(Number(gainSlider.value)),
+      audioContext.currentTime,
+      0.05
     );
+  }
+}
 
-    button.classList.add("active");
-    mode = button.dataset.mode;
-  });
-});
+gainSlider.addEventListener("input", updateSettings);
+sensitivitySlider.addEventListener("input", updateSettings);
+smoothSlider.addEventListener("input", updateSettings);
 
-/* マイク開始 */
-startBtn.addEventListener("click", async () => {
-  if (running) return;
+function setStatus(active, message) {
+  statusText.textContent = message;
+  statusDot.classList.toggle("active", active);
+}
+
+async function stopMicrophone() {
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+    stream = null;
+  }
+
+  if (audioContext) {
+    try {
+      await audioContext.close();
+    } catch (e) {}
+    audioContext = null;
+  }
+
+  source = null;
+  gainNode = null;
+  analyser = null;
+  inputAnalyser = null;
+}
+
+async function startMicrophone() {
+  startBtn.disabled = true;
+  reconnectBtn.disabled = true;
+  startBtn.textContent = "接続中...";
+  setStatus(false, "マイクを取得しています...");
 
   try {
-    statusText.textContent = "マイクに接続中...";
+    await stopMicrophone();
 
     stream = await navigator.mediaDevices.getUserMedia({
       audio: {
@@ -587,9 +561,7 @@ startBtn.addEventListener("click", async () => {
       }
     });
 
-    audioContext = new (
-      window.AudioContext || window.webkitAudioContext
-    )();
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
     if (audioContext.state === "suspended") {
       await audioContext.resume();
@@ -599,10 +571,11 @@ startBtn.addEventListener("click", async () => {
 
     inputAnalyser = audioContext.createAnalyser();
     inputAnalyser.fftSize = 2048;
-    inputAnalyser.smoothingTimeConstant = 0;
+    inputAnalyser.smoothingTimeConstant = 0.3;
 
     gainNode = audioContext.createGain();
-    gainNode.gain.value = inputGain;
+    gainNode.gain.value =
+      getGainFromPercent(Number(gainSlider.value));
 
     analyser = audioContext.createAnalyser();
     analyser.fftSize = 8192;
@@ -615,245 +588,361 @@ startBtn.addEventListener("click", async () => {
     gainNode.connect(analyser);
 
     frequencyData = new Uint8Array(analyser.frequencyBinCount);
-    timeData = new Uint8Array(analyser.fftSize);
-    inputTimeData = new Uint8Array(inputAnalyser.fftSize);
+    inputData = new Float32Array(inputAnalyser.fftSize);
 
-    running = true;
-    startBtn.textContent = "マイク接続中";
-    startBtn.disabled = true;
-    statusText.textContent = "マイク入力を取得中";
-
-    draw();
+    setStatus(true, "マイク接続中");
+    startBtn.textContent = "マイク接続済み";
 
   } catch (error) {
     console.error(error);
-    statusText.textContent = "マイクに接続できませんでした";
-    alert("マイクへのアクセスを許可してください。");
+    setStatus(false, "マイクを取得できませんでした");
+    startBtn.textContent = "マイク開始";
+    alert("マイクを取得できませんでした。Safariのマイク許可設定を確認してください。");
+  } finally {
+    startBtn.disabled = false;
+    reconnectBtn.disabled = false;
+  }
+}
+
+startBtn.addEventListener("click", async () => {
+  if (!stream) {
+    await startMicrophone();
   }
 });
 
-/* 入力メーター */
-function getInputLevel() {
-  inputAnalyser.getByteTimeDomainData(inputTimeData);
+reconnectBtn.addEventListener("click", startMicrophone);
 
-  let sum = 0;
-
-  for (let i = 0; i < inputTimeData.length; i++) {
-    const v = (inputTimeData[i] - 128) / 128;
-    sum += v * v;
-  }
-
-  const rms = Math.sqrt(sum / inputTimeData.length);
-  const db = 20 * Math.log10(Math.max(rms, 0.00001));
-
-  return Math.max(0, Math.min(100, (db + 60) * 2));
+function getFrequencyIndex(hz) {
+  return Math.round(hz * analyser.fftSize / audioContext.sampleRate);
 }
 
-/* 周波数計算 */
-function getBand(minHz, maxHz) {
-  const nyquist = audioContext.sampleRate / 2;
-  const binWidth = nyquist / analyser.frequencyBinCount;
-
-  const start = Math.max(0, Math.floor(minHz / binWidth));
-  const end = Math.min(
-    analyser.frequencyBinCount - 1,
-    Math.ceil(maxHz / binWidth)
-  );
+function getBandLevel(data, minHz, maxHz) {
+  const min = Math.max(0, getFrequencyIndex(minHz));
+  const max = Math.min(data.length - 1, getFrequencyIndex(maxHz));
 
   let sum = 0;
   let count = 0;
 
-  for (let i = start; i <= end; i++) {
-    const db = frequencyData[i] / 255 * 85 - 100;
-    const amplitude = Math.pow(10, db / 20);
-
-    sum += amplitude * amplitude;
+  for (let i = min; i <= max; i++) {
+    const value = data[i] / 255;
+    sum += value * value;
     count++;
   }
 
-  const rms = Math.sqrt(sum / Math.max(1, count));
-  const db = 20 * Math.log10(Math.max(rms, 0.000001));
+  if (!count) return 0;
 
-  return Math.max(0, Math.min(100, (db + 78) * 2.2));
+  return Math.sqrt(sum / count);
 }
 
 function updateMeters() {
-  const input = getInputLevel();
+  if (!inputAnalyser || !analyser) return;
 
-  document.getElementById("inputMeter").style.width = input + "%";
-  document.getElementById("inputValue").textContent =
-    Math.round(input) + "%";
+  inputAnalyser.getFloatTimeDomainData(inputData);
 
-  const low = getBand(35, 250) * 1.5;
-  const mid = getBand(250, 3500);
-  const high = getBand(3500, 12000) * 1.3;
-
-  const attack = 0.25;
-  const release = smooth;
-
-  function blend(oldValue, newValue) {
-    const factor = newValue > oldValue ? attack : release;
-    return oldValue * factor + newValue * (1 - factor);
+  let sum = 0;
+  for (let i = 0; i < inputData.length; i++) {
+    sum += inputData[i] * inputData[i];
   }
 
-  smoothedLow = blend(smoothedLow, low);
-  smoothedMid = blend(smoothedMid, mid);
-  smoothedHigh = blend(smoothedHigh, high);
+  const rms = Math.sqrt(sum / inputData.length);
+  const db = 20 * Math.log10(Math.max(rms, 0.000001));
 
-  setMeter("low", smoothedLow);
-  setMeter("mid", smoothedMid);
-  setMeter("high", smoothedHigh);
+  const inputLevel = Math.max(0, Math.min(100, (db + 60) * 2));
+
+  inputMeter.style.width = inputLevel + "%";
+  inputValue.textContent = Math.round(inputLevel) + "%";
+
+  const low = getBandLevel(frequencyData, 35, 250);
+  const mid = getBandLevel(frequencyData, 250, 3500);
+  const high = getBandLevel(frequencyData, 3500, 12000);
+
+  const smoothing = Number(smoothSlider.value) / 100 * 0.9;
+
+  smoothBands.low = smoothBands.low * smoothing + low * (1 - smoothing);
+  smoothBands.mid = smoothBands.mid * smoothing + mid * (1 - smoothing);
+  smoothBands.high = smoothBands.high * smoothing + high * (1 - smoothing);
+
+  const toPercent = v => Math.min(100, v * 180);
+
+  const lowPercent = toPercent(smoothBands.low);
+  const midPercent = toPercent(smoothBands.mid);
+  const highPercent = toPercent(smoothBands.high);
+
+  lowMeter.style.width = lowPercent + "%";
+  midMeter.style.width = midPercent + "%";
+  highMeter.style.width = highPercent + "%";
+
+  lowValue.textContent = Math.round(lowPercent) + "%";
+  midValue.textContent = Math.round(midPercent) + "%";
+  highValue.textContent = Math.round(highPercent) + "%";
+
+  currentBass = smoothBands.low;
 }
 
-function setMeter(name, value) {
-  const v = Math.max(0, Math.min(100, value * sensitivity * 2));
+function drawBackground(time) {
+  const bass = Math.min(1, currentBass * 5);
+  const pulse = bass * 0.35;
 
-  document.getElementById(name + "Meter").style.width = v + "%";
-  document.getElementById(name + "Value").textContent =
-    Math.round(v) + "%";
-}
+  const gradient = ctx.createRadialGradient(
+    width / 2,
+    height * 0.85,
+    10,
+    width / 2,
+    height * 0.85,
+    height * 0.9
+  );
 
-/* 描画ループ */
-function draw() {
-  if (!running) return;
+  gradient.addColorStop(0, `rgba(42, 95, 210, ${0.08 + pulse})`);
+  gradient.addColorStop(0.5, `rgba(40, 60, 140, ${0.04 + pulse * 0.3})`);
+  gradient.addColorStop(1, "#080c16");
 
-  requestAnimationFrame(draw);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, height);
 
-  analyser.getByteFrequencyData(frequencyData);
-  analyser.getByteTimeDomainData(timeData);
-
-  updateMeters();
-
-  const width = canvas.clientWidth;
-  const height = canvas.clientHeight;
-
-  ctx.clearRect(0, 0, width, height);
-
-  if (mode === "spectrum") drawSpectrum(width, height);
-  if (mode === "circle") drawCircle(width, height);
-  if (mode === "wave") drawWave(width, height);
-  if (mode === "particles") drawParticles(width, height);
-}
-
-/* Spectrum */
-function drawSpectrum(w, h) {
-  const bars = 100;
-  const gap = 2;
-  const barWidth = w / bars;
-
-  for (let i = 0; i < bars; i++) {
-    const ratio = i / bars;
-    const freq = Math.floor(Math.pow(12000 / 35, ratio) * 35);
-
-    const bin = Math.floor(
-      freq / (audioContext.sampleRate / analyser.fftSize)
-    );
-
-    const value =
-      frequencyData[Math.min(bin, frequencyData.length - 1)] || 0;
-
-    let boost = 1;
-    if (freq < 250) boost = 1.5;
-    else if (freq > 3500) boost = 1.3;
-
-    const level = Math.min(255, value * boost * sensitivity * 2);
-    const barHeight = level / 255 * h * 0.9;
-    const hue = 210 + ratio * 100;
-
-    ctx.fillStyle = `hsl(${hue}, 90%, 62%)`;
-    ctx.fillRect(
-      i * barWidth + gap / 2,
-      h - barHeight,
-      Math.max(1, barWidth - gap),
-      barHeight
-    );
-  }
-}
-
-/* Circle */
-function drawCircle(w, h) {
-  const cx = w / 2;
-  const cy = h / 2;
-  const baseRadius = Math.min(w, h) * 0.22;
-  const count = 160;
+  // 背景の光の波紋
+  const radius = 50 + bass * 100 + Math.sin(time * 0.001) * 10;
 
   ctx.beginPath();
-
-  for (let i = 0; i < count; i++) {
-    const index = Math.floor(i / count * frequencyData.length);
-    const value = frequencyData[index] * sensitivity * 2;
-    const radius = baseRadius + value * 0.35;
-
-    const angle = i / count * Math.PI * 2;
-    const x = cx + Math.cos(angle) * radius;
-    const y = cy + Math.sin(angle) * radius;
-
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  }
-
-  ctx.closePath();
-  ctx.strokeStyle = "#70a0ff";
-  ctx.lineWidth = 2;
-  ctx.shadowBlur = 15;
-  ctx.shadowColor = "#397aff";
+  ctx.arc(width / 2, height * 0.82, radius, 0, Math.PI * 2);
+  ctx.strokeStyle = `rgba(75, 140, 255, ${0.05 + pulse * 0.3})`;
+  ctx.lineWidth = 2 + bass * 5;
   ctx.stroke();
-  ctx.shadowBlur = 0;
 }
 
-/* Wave */
-function drawWave(w, h) {
-  ctx.beginPath();
-
-  for (let i = 0; i < timeData.length; i++) {
-    const x = i / timeData.length * w;
-    const raw = (timeData[i] - 128) / 128;
-    const y = h / 2 + raw * h * 0.42 * (sensitivity * 2);
-
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  }
-
-  ctx.strokeStyle = "#70a0ff";
-  ctx.lineWidth = 2;
-  ctx.shadowBlur = 12;
-  ctx.shadowColor = "#397aff";
-  ctx.stroke();
-  ctx.shadowBlur = 0;
-}
-
-/* Particles */
-function drawParticles(w, h) {
-  const energy = (
-    smoothedLow + smoothedMid + smoothedHigh
-  ) / 3;
-
-  if (Math.random() < 0.25 + energy / 180) {
+function drawParticles(time) {
+  if (currentBass > 0.025 && Math.random() < 0.35) {
     particles.push({
-      x: Math.random() * w,
-      y: Math.random() * h,
-      size: 1 + Math.random() * 3,
-      speed: 0.5 + Math.random() * 2,
-      life: 1
+      x: Math.random() * width,
+      y: height * (0.55 + Math.random() * 0.4),
+      size: 1 + Math.random() * 2,
+      life: 1,
+      speed: 0.4 + Math.random() * 1.2
     });
   }
 
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
 
-    p.y -= p.speed * (1 + energy / 30);
-    p.life -= 0.008;
+    p.y -= p.speed;
+    p.life -= 0.009;
 
     ctx.beginPath();
     ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(100,160,255,${p.life})`;
+    ctx.fillStyle = `rgba(110, 170, 255, ${p.life * 0.6})`;
     ctx.fill();
 
-    if (p.life <= 0 || p.y < 0) {
-      particles.splice(i, 1);
-    }
+    if (p.life <= 0) particles.splice(i, 1);
   }
+
+  if (particles.length > 100) particles.splice(0, 10);
 }
+
+function drawSpectrum(time) {
+  if (!analyser || !frequencyData) {
+    drawIdle(time);
+    return;
+  }
+
+  analyser.getByteFrequencyData(frequencyData);
+  updateMeters();
+
+  const sensitivity = Number(sensitivitySlider.value) / 100;
+  const smooth = Number(smoothSlider.value) / 100;
+
+  const count = bars.length;
+  const gap = Math.max(2, width / count * 0.22);
+  const barWidth = width / count - gap;
+
+  const centerY = height * 0.83;
+  const maxHeight = height * 0.67;
+
+  drawBackground(time);
+  drawParticles(time);
+
+  const minHz = 35;
+  const maxHz = 12000;
+
+  for (let i = 0; i < count; i++) {
+    const position = i / count;
+
+    const hz = minHz * Math.pow(maxHz / minHz, position);
+    const index = Math.min(
+      frequencyData.length - 1,
+      Math.max(0, Math.round(hz * analyser.fftSize / audioContext.sampleRate))
+    );
+
+    let value = frequencyData[index] / 255;
+
+    // 低音と高音の存在感を調整
+    const bassBoost = position < 0.25 ? 1.35 : 1;
+    const trebleBoost = position > 0.75 ? 1.18 : 1;
+
+    value *= bassBoost * trebleBoost;
+    value = Math.min(1, value * (0.35 + sensitivity * 2.4));
+
+    // 周囲の周波数を少し混ぜて滑らかにする
+    if (index > 1 && index < frequencyData.length - 2) {
+      const neighbor =
+        (frequencyData[index - 1] +
+         frequencyData[index + 1]) / 510;
+
+      value = value * 0.78 + neighbor * 0.22;
+      value *= (0.8 + sensitivity * 0.4);
+    }
+
+    bars[i] = bars[i] * smooth * 0.65 + value * (1 - smooth * 0.65);
+
+    const barHeight = Math.max(2, bars[i] * maxHeight);
+
+    peaks[i] = Math.max(
+      bars[i],
+      peaks[i] - 0.004 - (1 - smooth) * 0.006
+    );
+
+    const x = i * (barWidth + gap);
+    const y = centerY - barHeight;
+
+    const hue = 215 + position * 105;
+
+    // バー本体のグラデーション
+    const gradient = ctx.createLinearGradient(0, centerY, 0, y);
+
+    gradient.addColorStop(0, `hsla(${hue}, 100%, 62%, 0.95)`);
+    gradient.addColorStop(0.5, `hsla(${hue + 15}, 100%, 67%, 0.9)`);
+    gradient.addColorStop(1, `hsla(${hue + 35}, 100%, 78%, 0.8)`);
+
+    // 発光
+    ctx.shadowBlur = 10 + bars[i] * 24;
+    ctx.shadowColor = `hsla(${hue}, 100%, 65%, 0.9)`;
+
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.roundRect(x, y, barWidth, barHeight, 4);
+    ctx.fill();
+
+    ctx.shadowBlur = 0;
+
+    // ピーク表示
+    const peakY = centerY - peaks[i] * maxHeight;
+
+    ctx.fillStyle = `hsla(${hue + 30}, 100%, 85%, 0.9)`;
+    ctx.fillRect(x, peakY - 2, barWidth, 2);
+
+    // 下側の反射
+    const reflection = ctx.createLinearGradient(
+      0, centerY, 0, centerY + barHeight * 0.38
+    );
+
+    reflection.addColorStop(0, `hsla(${hue}, 100%, 65%, 0.2)`);
+    reflection.addColorStop(1, `hsla(${hue}, 100%, 60%, 0)`);
+
+    ctx.fillStyle = reflection;
+    ctx.fillRect(x, centerY + 3, barWidth, barHeight * 0.38);
+  }
+
+  // 中央の光のライン
+  const lineGradient = ctx.createLinearGradient(0, 0, width, 0);
+  lineGradient.addColorStop(0, "rgba(70,120,255,0)");
+  lineGradient.addColorStop(0.5, "rgba(120,190,255,0.9)");
+  lineGradient.addColorStop(1, "rgba(70,120,255,0)");
+
+  ctx.shadowBlur = 14;
+  ctx.shadowColor = "#4f9fff";
+  ctx.strokeStyle = lineGradient;
+  ctx.lineWidth = 1.5;
+
+  ctx.beginPath();
+  ctx.moveTo(0, centerY);
+  ctx.lineTo(width, centerY);
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+
+  // 低音に連動する中央の光
+  const bassGlow = Math.min(1, currentBass * 6);
+
+  const glow = ctx.createRadialGradient(
+    width / 2, centerY, 0,
+    width / 2, centerY, width * 0.55
+  );
+
+  glow.addColorStop(0, `rgba(80,140,255,${bassGlow * 0.16})`);
+  glow.addColorStop(1, "rgba(80,140,255,0)");
+
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, width, height);
+}
+
+function drawIdle(time) {
+  ctx.fillStyle = "#080c16";
+  ctx.fillRect(0, 0, width, height);
+
+  const centerX = width / 2;
+  const centerY = height * 0.7;
+
+  const pulse = 1 + Math.sin(time * 0.002) * 0.04;
+
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, 30 * pulse, 0, Math.PI * 2);
+  ctx.strokeStyle = "#477bdf";
+  ctx.lineWidth = 2;
+  ctx.shadowBlur = 20;
+  ctx.shadowColor = "#477bdf";
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = "#91a9d8";
+  ctx.font = "14px sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("MICROPHONE STANDBY", centerX, centerY + 65);
+}
+
+function animate(time) {
+  ctx.clearRect(0, 0, width, height);
+  drawSpectrum(time);
+  animationFrame = requestAnimationFrame(animate);
+}
+
+function startAnimation() {
+  if (animationFrame) cancelAnimationFrame(animationFrame);
+  animationFrame = requestAnimationFrame(animate);
+}
+
+viewBtn.addEventListener("click", () => {
+  if (!document.body.classList.contains("fullscreen-mode")) {
+    document.body.classList.add("fullscreen-mode");
+    viewBtn.textContent = "メニュー";
+  } else if (!document.body.classList.contains("menu-open")) {
+    document.body.classList.add("menu-open");
+    viewBtn.textContent = "メニューを閉じる";
+  } else {
+    document.body.classList.remove("menu-open");
+    viewBtn.textContent = "メニュー";
+  }
+});
+
+document.addEventListener("click", event => {
+  if (event.target.id === "viewBtn") return;
+
+  if (
+    document.body.classList.contains("fullscreen-mode") &&
+    document.body.classList.contains("menu-open") &&
+    event.target.closest(".menu-panel")
+  ) {
+    return;
+  }
+});
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") {
+    document.body.classList.remove("fullscreen-mode", "menu-open");
+    viewBtn.textContent = "全画面";
+  }
+});
+
+updateSettings();
+resizeCanvas();
+startAnimation();
 </script>
 </body>
 </html>
