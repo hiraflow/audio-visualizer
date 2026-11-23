@@ -450,7 +450,7 @@ let hideTimer = null;
 
 const BAR_COUNT = 100;
 
-/* 0〜100%のバーを実際の倍率に変換 */
+/* 入力レベル */
 function updateGainFromSlider() {
   const position = Number($("gain").value);
 
@@ -469,6 +469,7 @@ function updateGainFromSlider() {
   }
 }
 
+/* 感度 */
 function updateSensitivityFromSlider() {
   const position = Number($("sensitivity").value);
 
@@ -518,11 +519,16 @@ async function startMicrophone() {
       stream = null;
     }
 
+    isRunning = false;
+
     if (audioContext) {
       try {
         await audioContext.close();
       } catch (e) {}
     }
+
+    const AudioContextClass =
+      window.AudioContext || window.webkitAudioContext;
 
     stream = await navigator.mediaDevices.getUserMedia({
       audio: {
@@ -531,9 +537,6 @@ async function startMicrophone() {
         autoGainControl: false
       }
     });
-
-    const AudioContextClass =
-      window.AudioContext || window.webkitAudioContext;
 
     audioContext = new AudioContextClass();
 
@@ -581,7 +584,6 @@ $("reconnectBtn").addEventListener("click", startMicrophone);
 $("gain").addEventListener("input", updateGainFromSlider);
 $("sensitivity").addEventListener("input", updateSensitivityFromSlider);
 
-/* 初期値を反映 */
 updateGainFromSlider();
 updateSensitivityFromSlider();
 
@@ -694,7 +696,7 @@ function averageFrequency(startHz, endHz) {
 /* 各バーの周波数 */
 function getBarValue(index) {
   const minHz = 35;
-  const maxHz = 15000;
+  const maxHz = 12000; // 表示上限を12kHzに変更
 
   const t1 = index / BAR_COUNT;
   const t2 = (index + 1) / BAR_COUNT;
