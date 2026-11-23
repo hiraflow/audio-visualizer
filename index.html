@@ -31,9 +31,7 @@ html, body {
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-button, input {
-  font: inherit;
-}
+button, input { font: inherit; }
 
 #app {
   position: relative;
@@ -93,9 +91,7 @@ canvas {
   transition: opacity .35s;
 }
 
-.status span {
-  color: #aab7ff;
-}
+.status span { color: #aab7ff; }
 
 .toolbar {
   position: absolute;
@@ -125,9 +121,7 @@ canvas {
   border-color: rgba(145,160,255,.4);
 }
 
-.btn:active {
-  transform: scale(.96);
-}
+.btn:active { transform: scale(.96); }
 
 .iconBtn {
   width: 42px;
@@ -156,9 +150,7 @@ canvas {
   display: none;
 }
 
-.settings.open {
-  display: block;
-}
+.settings.open { display: block; }
 
 .settings h2 {
   font-size: 13px;
@@ -166,9 +158,7 @@ canvas {
   margin: 0 0 20px;
 }
 
-.setting {
-  margin: 20px 0;
-}
+.setting { margin: 20px 0; }
 
 .settingHead {
   display: flex;
@@ -198,9 +188,15 @@ input[type="range"] {
   margin-top: 6px;
 }
 
-.meterGroup {
-  margin-top: 23px;
+.rangeScale {
+  display: flex;
+  justify-content: space-between;
+  color: #8792b5;
+  font-size: 9px;
+  margin-top: 5px;
 }
+
+.meterGroup { margin-top: 23px; }
 
 .meterTitle {
   font-size: 10px;
@@ -209,9 +205,7 @@ input[type="range"] {
   margin-bottom: 13px;
 }
 
-.meter {
-  margin: 12px 0;
-}
+.meter { margin: 12px 0; }
 
 .meterLabel {
   display: flex;
@@ -237,9 +231,7 @@ input[type="range"] {
 }
 
 #app.fullscreen .header,
-#app.fullscreen .status {
-  opacity: 0;
-}
+#app.fullscreen .status { opacity: 0; }
 
 #app.fullscreen.controlsHidden .toolbar {
   opacity: 0;
@@ -248,9 +240,7 @@ input[type="range"] {
 }
 
 #app.fullscreen.controlsHidden .header,
-#app.fullscreen.controlsHidden .status {
-  opacity: 0;
-}
+#app.fullscreen.controlsHidden .status { opacity: 0; }
 
 .centerMessage {
   position: absolute;
@@ -279,23 +269,12 @@ input[type="range"] {
   color: rgba(130,145,190,.55);
 }
 
-.centerMessage.hidden {
-  opacity: 0;
-}
+.centerMessage.hidden { opacity: 0; }
 
 @media (max-width: 600px) {
-  .header, .status {
-    left: 15px;
-  }
-
-  .toolbar {
-    right: 12px;
-  }
-
-  .btn {
-    padding: 10px 11px;
-  }
-
+  .header, .status { left: 15px; }
+  .toolbar { right: 12px; }
+  .btn { padding: 10px 11px; }
   .iconBtn {
     width: 40px;
     height: 40px;
@@ -337,24 +316,38 @@ input[type="range"] {
     <div class="setting">
       <div class="settingHead">
         <label for="gain">入力レベル</label>
-        <output id="gainValue">100%</output>
+        <output id="gainValue">300%</output>
       </div>
       <input id="gain" type="range"
-        min="0" max="8" step="0.05" value="1">
+        min="0" max="100" step="1" value="50">
       <div class="rangeEnds">
-        <span>0%</span><span>800%</span>
+        <span>0%</span>
+        <span>300%</span>
+        <span>600%</span>
+      </div>
+      <div class="rangeScale">
+        <span>最小</span>
+        <span>標準</span>
+        <span>最大</span>
       </div>
     </div>
 
     <div class="setting">
       <div class="settingHead">
         <label for="sensitivity">感度</label>
-        <output id="sensitivityValue">180%</output>
+        <output id="sensitivityValue">150%</output>
       </div>
       <input id="sensitivity" type="range"
-        min="0" max="5" step="0.05" value="1.8">
+        min="0" max="100" step="1" value="50">
       <div class="rangeEnds">
-        <span>0%</span><span>500%</span>
+        <span>0%</span>
+        <span>150%</span>
+        <span>300%</span>
+      </div>
+      <div class="rangeScale">
+        <span>最小</span>
+        <span>標準</span>
+        <span>最大</span>
       </div>
     </div>
 
@@ -449,13 +442,42 @@ let peakData = [];
 
 let isRunning = false;
 
-let gainValue = 1;
-let sensitivity = 1.8;
+let gainValue = 3;
+let sensitivity = 1.5;
 let smoothing = 0.72;
 
 let hideTimer = null;
 
 const BAR_COUNT = 100;
+
+/* 0〜100%のバーを実際の倍率に変換 */
+function updateGainFromSlider() {
+  const position = Number($("gain").value);
+
+  // 50% = 3倍、100% = 6倍
+  gainValue = position / 50 * 3;
+
+  $("gainValue").textContent =
+    Math.round(gainValue * 100) + "%";
+
+  if (gainNode && audioContext) {
+    gainNode.gain.setTargetAtTime(
+      gainValue,
+      audioContext.currentTime,
+      0.04
+    );
+  }
+}
+
+function updateSensitivityFromSlider() {
+  const position = Number($("sensitivity").value);
+
+  // 50% = 1.5倍、100% = 3倍
+  sensitivity = position / 50 * 1.5;
+
+  $("sensitivityValue").textContent =
+    Math.round(sensitivity * 100) + "%";
+}
 
 /* Canvasサイズ */
 function resizeCanvas() {
@@ -555,29 +577,13 @@ async function startMicrophone() {
 micBtn.addEventListener("click", startMicrophone);
 $("reconnectBtn").addEventListener("click", startMicrophone);
 
-/* 入力レベル */
-$("gain").addEventListener("input", e => {
-  gainValue = Number(e.target.value);
+/* 入力レベル・感度 */
+$("gain").addEventListener("input", updateGainFromSlider);
+$("sensitivity").addEventListener("input", updateSensitivityFromSlider);
 
-  $("gainValue").textContent =
-    Math.round(gainValue * 100) + "%";
-
-  if (gainNode && audioContext) {
-    gainNode.gain.setTargetAtTime(
-      gainValue,
-      audioContext.currentTime,
-      0.04
-    );
-  }
-});
-
-/* 感度 */
-$("sensitivity").addEventListener("input", e => {
-  sensitivity = Number(e.target.value);
-
-  $("sensitivityValue").textContent =
-    Math.round(sensitivity * 100) + "%";
-});
+/* 初期値を反映 */
+updateGainFromSlider();
+updateSensitivityFromSlider();
 
 /* 滑らかさ */
 $("smooth").addEventListener("input", e => {
