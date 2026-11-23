@@ -196,42 +196,10 @@ input[type="range"] {
   margin-top: 5px;
 }
 
-.meterGroup { margin-top: 23px; }
-
-.meterTitle {
-  font-size: 10px;
-  color: #9ba8d2;
-  letter-spacing: 1.5px;
-  margin-bottom: 13px;
-}
-
-.meter { margin: 12px 0; }
-
-.meterLabel {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-  color: #8e9abe;
-  margin-bottom: 6px;
-}
-
-.meterTrack {
-  height: 5px;
-  border-radius: 8px;
-  background: rgba(140,155,220,.12);
-  overflow: hidden;
-}
-
-.meterFill {
-  height: 100%;
-  width: 0%;
-  border-radius: inherit;
-  background: linear-gradient(90deg,#6379df,#9caaff,#d2d8ff);
-  transition: width .08s linear;
-}
-
 #app.fullscreen .header,
-#app.fullscreen .status { opacity: 0; }
+#app.fullscreen .status {
+  opacity: 0;
+}
 
 #app.fullscreen.controlsHidden .toolbar {
   opacity: 0;
@@ -240,7 +208,9 @@ input[type="range"] {
 }
 
 #app.fullscreen.controlsHidden .header,
-#app.fullscreen.controlsHidden .status { opacity: 0; }
+#app.fullscreen.controlsHidden .status {
+  opacity: 0;
+}
 
 .centerMessage {
   position: absolute;
@@ -310,6 +280,7 @@ input[type="range"] {
     <button class="btn iconBtn" id="fullscreenBtn">⛶</button>
   </div>
 
+  <!-- 設定メニュー -->
   <div class="settings" id="settings">
     <h2>VISUALIZER SETTINGS</h2>
 
@@ -318,12 +289,16 @@ input[type="range"] {
         <label for="gain">入力レベル</label>
         <output id="gainValue">300%</output>
       </div>
-      <input id="gain" type="range" min="0" max="100" step="1" value="50">
+
+      <input id="gain" type="range"
+        min="0" max="100" step="1" value="50">
+
       <div class="rangeEnds">
         <span>0%</span>
         <span>300%</span>
         <span>600%</span>
       </div>
+
       <div class="rangeScale">
         <span>最小</span>
         <span>標準</span>
@@ -336,12 +311,16 @@ input[type="range"] {
         <label for="sensitivity">感度</label>
         <output id="sensitivityValue">150%</output>
       </div>
-      <input id="sensitivity" type="range" min="0" max="100" step="1" value="50">
+
+      <input id="sensitivity" type="range"
+        min="0" max="100" step="1" value="50">
+
       <div class="rangeEnds">
         <span>0%</span>
         <span>150%</span>
         <span>300%</span>
       </div>
+
       <div class="rangeScale">
         <span>最小</span>
         <span>標準</span>
@@ -349,65 +328,7 @@ input[type="range"] {
       </div>
     </div>
 
-    <div class="setting">
-      <div class="settingHead">
-        <label for="smooth">滑らかさ</label>
-        <output id="smoothValue">0.72</output>
-      </div>
-      <input id="smooth" type="range" min="0" max="0.95" step="0.01" value="0.72">
-    </div>
-
-    <div class="meterGroup">
-      <div class="meterTitle">INPUT LEVEL</div>
-      <div class="meterLabel">
-        <span>MICROPHONE SIGNAL</span>
-        <span id="inputValue">0%</span>
-      </div>
-      <div class="meterTrack">
-        <div class="meterFill" id="inputMeter"></div>
-      </div>
-    </div>
-
-    <div class="meterGroup">
-      <div class="meterTitle">FREQUENCY ANALYSIS</div>
-
-      <div class="meter">
-        <div class="meterLabel">
-          <span>LOW · 35–250 Hz</span>
-          <span id="lowValue">0%</span>
-        </div>
-        <div class="meterTrack">
-          <div class="meterFill" id="lowMeter"></div>
-        </div>
-      </div>
-
-      <div class="meter">
-        <div class="meterLabel">
-          <span>MID · 250–3500 Hz</span>
-          <span id="midValue">0%</span>
-        </div>
-        <div class="meterTrack">
-          <div class="meterFill" id="midMeter"></div>
-        </div>
-      </div>
-
-      <div class="meter">
-        <div class="meterLabel">
-          <span>HIGH · 3500–12000 Hz</span>
-          <span id="highValue">0%</span>
-        </div>
-        <div class="meterTrack">
-          <div class="meterFill" id="highMeter"></div>
-        </div>
-      </div>
-    </div>
-
-    <button class="btn" id="reconnectBtn"
-      style="width:100%; margin-top:20px;">
-      マイクを再取得
-    </button>
   </div>
-
 </div>
 
 <script>
@@ -419,7 +340,6 @@ const $ = id => document.getElementById(id);
 const app = $("app");
 const canvas = $("canvas");
 const ctx = canvas.getContext("2d");
-
 const settings = $("settings");
 const micBtn = $("micBtn");
 
@@ -441,16 +361,16 @@ let isRunning = false;
 
 let gainValue = 3;
 let sensitivity = 1.5;
-let smoothing = 0.72;
+const smoothing = 0.72;
 
 let hideTimer = null;
-
-/* 低音に反応する光 */
-let bassGlow = 0;
+let globalGlow = 0;
 
 const BAR_COUNT = 100;
+const MIN_HZ = 35;
+const MAX_HZ = 12000;
 
-/* 入力レベル */
+/* スライダー */
 function updateGainFromSlider() {
   const position = Number($("gain").value);
   gainValue = position / 50 * 3;
@@ -467,7 +387,6 @@ function updateGainFromSlider() {
   }
 }
 
-/* 感度 */
 function updateSensitivityFromSlider() {
   const position = Number($("sensitivity").value);
   sensitivity = position / 50 * 1.5;
@@ -476,7 +395,13 @@ function updateSensitivityFromSlider() {
     Math.round(sensitivity * 100) + "%";
 }
 
-/* Canvasサイズ */
+$("gain").addEventListener("input", updateGainFromSlider);
+$("sensitivity").addEventListener("input", updateSensitivityFromSlider);
+
+updateGainFromSlider();
+updateSensitivityFromSlider();
+
+/* Canvas */
 function resizeCanvas() {
   const rect = canvas.getBoundingClientRect();
 
@@ -501,7 +426,7 @@ if ("ResizeObserver" in window) {
 
 resizeCanvas();
 
-/* マイク */
+/* マイク取得 */
 async function startMicrophone() {
   try {
     micBtn.textContent = "接続中...";
@@ -509,8 +434,6 @@ async function startMicrophone() {
     if (!navigator.mediaDevices?.getUserMedia) {
       throw new Error("この環境ではマイクを利用できません。HTTPS接続を確認してください。");
     }
-
-    isRunning = false;
 
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
@@ -523,8 +446,7 @@ async function startMicrophone() {
       } catch (e) {}
     }
 
-    const AudioContextClass =
-      window.AudioContext || window.webkitAudioContext;
+    isRunning = false;
 
     stream = await navigator.mediaDevices.getUserMedia({
       audio: {
@@ -533,6 +455,9 @@ async function startMicrophone() {
         autoGainControl: false
       }
     });
+
+    const AudioContextClass =
+      window.AudioContext || window.webkitAudioContext;
 
     audioContext = new AudioContextClass();
 
@@ -558,8 +483,8 @@ async function startMicrophone() {
 
     smoothData = new Array(BAR_COUNT).fill(0);
     peakData = new Array(BAR_COUNT).fill(0);
-    bassGlow = 0;
 
+    globalGlow = 0;
     isRunning = true;
 
     $("statusText").textContent = "CONNECTED";
@@ -575,137 +500,23 @@ async function startMicrophone() {
 }
 
 micBtn.addEventListener("click", startMicrophone);
-$("reconnectBtn").addEventListener("click", startMicrophone);
 
-/* 入力レベル・感度 */
-$("gain").addEventListener("input", updateGainFromSlider);
-$("sensitivity").addEventListener("input", updateSensitivityFromSlider);
-
-updateGainFromSlider();
-updateSensitivityFromSlider();
-
-/* 滑らかさ */
-$("smooth").addEventListener("input", e => {
-  smoothing = Number(e.target.value);
-  $("smoothValue").textContent = smoothing.toFixed(2);
-});
-
-/* 設定パネル */
-$("settingsBtn").addEventListener("click", e => {
-  e.stopPropagation();
-  settings.classList.toggle("open");
-
-  if (settings.classList.contains("open")) {
-    showControls();
-  } else {
-    scheduleHide();
-  }
-});
-
-/* 全画面 */
-$("fullscreenBtn").addEventListener("click", e => {
-  e.stopPropagation();
-  app.classList.toggle("fullscreen");
-
-  if (app.classList.contains("fullscreen")) {
-    settings.classList.remove("open");
-    showControls();
-  } else {
-    clearTimeout(hideTimer);
-    app.classList.remove("controlsHidden");
-  }
-});
-
-/* メニュー表示 */
-function showControls() {
-  app.classList.remove("controlsHidden");
-  clearTimeout(hideTimer);
-
-  if (
-    app.classList.contains("fullscreen") &&
-    !settings.classList.contains("open")
-  ) {
-    scheduleHide();
-  }
-}
-
-function scheduleHide() {
-  clearTimeout(hideTimer);
-
-  if (
-    app.classList.contains("fullscreen") &&
-    !settings.classList.contains("open")
-  ) {
-    hideTimer = setTimeout(() => {
-      app.classList.add("controlsHidden");
-    }, 3500);
-  }
-}
-
-app.addEventListener("pointerdown", e => {
-  if (!app.classList.contains("fullscreen")) return;
-
-  if (settings.contains(e.target)) {
-    showControls();
-    return;
-  }
-
-  if (e.target.closest(".toolbar")) {
-    showControls();
-    return;
-  }
-
-  if (app.classList.contains("controlsHidden")) {
-    showControls();
-  } else {
-    scheduleHide();
-  }
-});
-
-/* 周波数平均 */
-function averageFrequency(startHz, endHz) {
-  if (!audioContext || !frequencyData || !analyser) return 0;
-
-  const start = Math.max(
-    0,
-    Math.floor(startHz * analyser.fftSize / audioContext.sampleRate)
-  );
-
-  const end = Math.min(
-    frequencyData.length - 1,
-    Math.ceil(endHz * analyser.fftSize / audioContext.sampleRate)
-  );
-
-  let total = 0;
-  let count = 0;
-
-  for (let i = start; i <= end; i++) {
-    total += frequencyData[i];
-    count++;
-  }
-
-  return count ? total / count : 0;
-}
-
-/* 各バーの周波数 */
+/* 周波数取得 */
 function getBarValue(index) {
-  const minHz = 35;
-  const maxHz = 12000;
+  if (!analyser || !audioContext || !frequencyData) return 0;
 
   const t1 = index / BAR_COUNT;
   const t2 = (index + 1) / BAR_COUNT;
 
-  const startHz = minHz * Math.pow(maxHz / minHz, t1);
-  const endHz = minHz * Math.pow(maxHz / minHz, t2);
+  const startHz = MIN_HZ * Math.pow(MAX_HZ / MIN_HZ, t1);
+  const endHz = MIN_HZ * Math.pow(MAX_HZ / MIN_HZ, t2);
 
-  const start = Math.max(
-    0,
-    Math.floor(startHz * analyser.fftSize / audioContext.sampleRate)
-  );
+  const binWidth = audioContext.sampleRate / analyser.fftSize;
 
+  const start = Math.max(0, Math.floor(startHz / binWidth));
   const end = Math.min(
     frequencyData.length - 1,
-    Math.ceil(endHz * analyser.fftSize / audioContext.sampleRate)
+    Math.max(start, Math.ceil(endHz / binWidth))
   );
 
   let sum = 0;
@@ -719,41 +530,23 @@ function getBarValue(index) {
   return count ? sum / count : 0;
 }
 
-/* メーター更新 */
-function updateMeters() {
-  if (!isRunning || !analyser) return;
+/* 低音の反応 */
+function getLowFrequency() {
+  if (!analyser || !audioContext || !frequencyData) return 0;
 
-  const low = averageFrequency(35, 250);
-  const mid = averageFrequency(250, 3500);
-  const high = averageFrequency(3500, 12000);
+  const binWidth = audioContext.sampleRate / analyser.fftSize;
+  const start = Math.floor(35 / binWidth);
+  const end = Math.ceil(250 / binWidth);
 
-  const input = (low + mid + high) / 3;
+  let sum = 0;
+  let count = 0;
 
-  function setMeter(id, valueId, value) {
-    const percent = Math.min(100, value / 255 * 100);
-    $(id).style.width = percent + "%";
-    $(valueId).textContent = Math.round(percent) + "%";
+  for (let i = start; i <= end; i++) {
+    sum += frequencyData[i] || 0;
+    count++;
   }
 
-  setMeter("inputMeter", "inputValue", input);
-  setMeter("lowMeter", "lowValue", low);
-  setMeter("midMeter", "midValue", mid);
-  setMeter("highMeter", "highValue", high);
-}
-
-/* 低音の反応を滑らかにする */
-function updateBassGlow() {
-  let target = 0;
-
-  if (isRunning && analyser) {
-    const low = averageFrequency(35, 250) / 255;
-
-    target = Math.max(0, (low - 0.08) * 1.7);
-    target = Math.min(1, target);
-  }
-
-  const speed = target > bassGlow ? 0.12 : 0.045;
-  bassGlow += (target - bassGlow) * speed;
+  return count ? sum / count / 255 : 0;
 }
 
 /* 背景 */
@@ -770,53 +563,44 @@ function drawBackground() {
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, width, height);
 
+  /* 全体に広がる音連動の光 */
   const glow = ctx.createRadialGradient(
     width * .5, height * .52, 0,
-    width * .5, height * .52, width * .48
+    width * .5, height * .52, width * .72
   );
 
-  glow.addColorStop(0, "rgba(70,95,200,.12)");
-  glow.addColorStop(1, "rgba(40,60,130,0)");
-
-  ctx.fillStyle = glow;
-  ctx.fillRect(0, 0, width, height);
-}
-
-/* 低音に反応する光：強度を約2倍に調整 */
-function drawBassGlow() {
-  if (bassGlow < 0.005) return;
-
-  const centerX = width * .5;
-  const centerY = height * .54;
-
-  const radius = width * (.25 + bassGlow * .16);
-  const alpha = bassGlow * 0.21;
-
-  const glow = ctx.createRadialGradient(
-    centerX, centerY, 0,
-    centerX, centerY, radius
-  );
+  const intensity = globalGlow;
 
   glow.addColorStop(
     0,
-    `rgba(125,145,255,${alpha})`
+    `rgba(85,115,255,${.10 + intensity * .24})`
   );
-
   glow.addColorStop(
     .45,
-    `rgba(95,115,235,${alpha * .5})`
+    `rgba(65,95,220,${.055 + intensity * .13})`
   );
-
   glow.addColorStop(
     1,
-    "rgba(70,90,190,0)"
+    "rgba(40,60,130,0)"
   );
 
-  ctx.save();
-  ctx.globalCompositeOperation = "screen";
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, width, height);
-  ctx.restore();
+
+  /* 中央の柔らかい光 */
+  const centerGlow = ctx.createRadialGradient(
+    width * .5, height * .68, 0,
+    width * .5, height * .68, width * .42
+  );
+
+  centerGlow.addColorStop(
+    0,
+    `rgba(105,130,255,${.07 + intensity * .22})`
+  );
+  centerGlow.addColorStop(1, "rgba(50,70,180,0)");
+
+  ctx.fillStyle = centerGlow;
+  ctx.fillRect(0, 0, width, height);
 }
 
 /* 湾曲した床 */
@@ -888,14 +672,14 @@ function drawSpectrum() {
     }
 
     smoothData[i] =
-      (smoothData[i] || 0) * smoothing +
+      smoothData[i] * smoothing +
       value * (1 - smoothing);
 
     const level = smoothData[i];
 
     peakData[i] = Math.max(
       level,
-      (peakData[i] || 0) - .0025
+      peakData[i] - .0025
     );
 
     const normalizedX = (i / (BAR_COUNT - 1)) * 2 - 1;
@@ -906,11 +690,7 @@ function drawSpectrum() {
     const x = centerX + normalizedX * spread * .5;
     const y = baseY + Math.pow(distance, 2) * height * .035;
 
-    const barHeight = Math.max(
-      0,
-      level * maxBarHeight * curve
-    );
-
+    const barHeight = level * maxBarHeight * curve;
     const peakHeight = peakData[i] * maxBarHeight * curve;
 
     const hue = 226 + (1 - distance) * 36;
@@ -932,8 +712,8 @@ function drawSpectrum() {
       );
 
       ctx.save();
-      ctx.shadowColor = `hsla(${hue},100%,70%,.65)`;
-      ctx.shadowBlur = 9 + level * 17;
+      ctx.shadowColor = `hsla(${hue},100%,70%,.75)`;
+      ctx.shadowBlur = 12 + level * 23;
       ctx.fillStyle = gradient;
 
       ctx.fillRect(
@@ -963,7 +743,7 @@ function drawSpectrum() {
       );
 
       reflection.addColorStop(
-        0, `hsla(${hue},90%,70%,.12)`
+        0, `hsla(${hue},90%,70%,.17)`
       );
       reflection.addColorStop(
         1, `hsla(${hue},90%,60%,0)`
@@ -1002,26 +782,106 @@ function drawSpectrum() {
   ctx.restore();
 }
 
-/* 描画ループ */
+/* 描画 */
 function draw() {
   requestAnimationFrame(draw);
 
   if (!width || !height) return;
 
-  if (isRunning && analyser) {
+  if (isRunning && analyser && frequencyData) {
     analyser.getByteFrequencyData(frequencyData);
-    updateMeters();
+
+    const low = getLowFrequency();
+
+    /* 低音に反応する全体光 */
+    const targetGlow = Math.min(1, low * 2.2);
+
+    globalGlow += (targetGlow - globalGlow) * .12;
+  } else {
+    globalGlow *= .96;
   }
 
-  updateBassGlow();
-
   drawBackground();
-  drawBassGlow();
   drawFloor();
   drawSpectrum();
 }
 
 draw();
+
+/* 設定パネル */
+$("settingsBtn").addEventListener("click", e => {
+  e.stopPropagation();
+
+  settings.classList.toggle("open");
+
+  if (settings.classList.contains("open")) {
+    showControls();
+  } else {
+    scheduleHide();
+  }
+});
+
+/* 全画面 */
+$("fullscreenBtn").addEventListener("click", e => {
+  e.stopPropagation();
+
+  app.classList.toggle("fullscreen");
+
+  if (app.classList.contains("fullscreen")) {
+    settings.classList.remove("open");
+    showControls();
+  } else {
+    clearTimeout(hideTimer);
+    app.classList.remove("controlsHidden");
+  }
+});
+
+/* 操作ボタン表示 */
+function showControls() {
+  app.classList.remove("controlsHidden");
+  clearTimeout(hideTimer);
+
+  if (
+    app.classList.contains("fullscreen") &&
+    !settings.classList.contains("open")
+  ) {
+    scheduleHide();
+  }
+}
+
+function scheduleHide() {
+  clearTimeout(hideTimer);
+
+  if (
+    app.classList.contains("fullscreen") &&
+    !settings.classList.contains("open")
+  ) {
+    hideTimer = setTimeout(() => {
+      app.classList.add("controlsHidden");
+    }, 3500);
+  }
+}
+
+/* 全画面中のタップ */
+app.addEventListener("pointerdown", e => {
+  if (!app.classList.contains("fullscreen")) return;
+
+  if (settings.contains(e.target)) {
+    showControls();
+    return;
+  }
+
+  if (e.target.closest(".toolbar")) {
+    showControls();
+    return;
+  }
+
+  if (app.classList.contains("controlsHidden")) {
+    showControls();
+  } else {
+    scheduleHide();
+  }
+});
 
 /* iPad復帰時 */
 document.addEventListener("visibilitychange", async () => {
