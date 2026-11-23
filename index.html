@@ -11,11 +11,9 @@
 <style>
 :root {
   --bg: #050711;
-  --panel: rgba(15, 19, 36, .92);
+  --panel: rgba(15, 19, 36, .94);
   --line: rgba(150, 170, 255, .16);
   --text: #e9edff;
-  --sub: #8792b5;
-  --accent: #8c9cff;
 }
 
 * {
@@ -30,11 +28,7 @@ html, body {
   overflow: hidden;
   background: var(--bg);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
-}
-
-body {
-  min-height: 100dvh;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 button, input {
@@ -47,9 +41,7 @@ button, input {
   height: 100%;
   height: 100dvh;
   overflow: hidden;
-  background:
-    radial-gradient(ellipse at 50% 48%, rgba(40, 55, 115, .17), transparent 65%),
-    #050711;
+  background: #050711;
 }
 
 #visualArea {
@@ -60,37 +52,35 @@ button, input {
 }
 
 canvas {
-  display: block;
   width: 100%;
   height: 100%;
+  display: block;
 }
 
-/* 上部タイトル */
 .header {
   position: absolute;
   top: max(18px, env(safe-area-inset-top));
   left: 22px;
   z-index: 5;
   pointer-events: none;
-  transition: opacity .35s, transform .35s;
+  transition: opacity .35s;
 }
 
 .header h1 {
-  font-size: 13px;
-  letter-spacing: 4px;
-  font-weight: 600;
   margin: 0;
-  color: rgba(225, 232, 255, .8);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  color: rgba(225,232,255,.8);
 }
 
 .header p {
+  margin: 5px 0 0;
   font-size: 9px;
   letter-spacing: 2px;
-  margin: 5px 0 0;
   color: #687397;
 }
 
-/* 下部情報 */
 .status {
   position: absolute;
   left: 22px;
@@ -107,7 +97,6 @@ canvas {
   color: #aab7ff;
 }
 
-/* 操作ツールバー */
 .toolbar {
   position: absolute;
   z-index: 30;
@@ -120,8 +109,8 @@ canvas {
 }
 
 .btn {
-  border: 1px solid rgba(160, 175, 255, .2);
-  background: rgba(18, 24, 48, .82);
+  border: 1px solid rgba(160,175,255,.2);
+  background: rgba(18,24,48,.84);
   color: #e7ebff;
   border-radius: 12px;
   padding: 11px 14px;
@@ -132,8 +121,8 @@ canvas {
 }
 
 .btn.primary {
-  background: rgba(103, 119, 226, .28);
-  border-color: rgba(145, 160, 255, .4);
+  background: rgba(103,119,226,.28);
+  border-color: rgba(145,160,255,.4);
 }
 
 .btn:active {
@@ -149,13 +138,12 @@ canvas {
   place-items: center;
 }
 
-/* 設定パネル */
 .settings {
   position: absolute;
   z-index: 25;
   top: max(70px, calc(env(safe-area-inset-top) + 62px));
   right: 16px;
-  width: min(310px, calc(100vw - 32px));
+  width: min(320px, calc(100vw - 32px));
   max-height: calc(100dvh - 100px);
   overflow-y: auto;
   padding: 20px;
@@ -179,7 +167,7 @@ canvas {
 }
 
 .setting {
-  margin: 18px 0;
+  margin: 20px 0;
 }
 
 .settingHead {
@@ -187,18 +175,27 @@ canvas {
   justify-content: space-between;
   font-size: 11px;
   color: #b7c1e5;
-  margin-bottom: 10px;
+  margin-bottom: 11px;
 }
 
 .settingHead output {
-  color: #9eacff;
+  color: #aab7ff;
   font-variant-numeric: tabular-nums;
 }
 
 input[type="range"] {
   width: 100%;
   accent-color: #929fff;
-  height: 4px;
+  height: 5px;
+  cursor: pointer;
+}
+
+.rangeEnds {
+  display: flex;
+  justify-content: space-between;
+  color: #687397;
+  font-size: 9px;
+  margin-top: 6px;
 }
 
 .meterGroup {
@@ -213,7 +210,7 @@ input[type="range"] {
 }
 
 .meter {
-  margin: 11px 0;
+  margin: 12px 0;
 }
 
 .meterLabel {
@@ -227,7 +224,7 @@ input[type="range"] {
 .meterTrack {
   height: 5px;
   border-radius: 8px;
-  background: rgba(140, 155, 220, .12);
+  background: rgba(140,155,220,.12);
   overflow: hidden;
 }
 
@@ -235,18 +232,13 @@ input[type="range"] {
   height: 100%;
   width: 0%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #6379df, #9caaff, #d2d8ff);
+  background: linear-gradient(90deg,#6379df,#9caaff,#d2d8ff);
   transition: width .08s linear;
 }
 
-/* 全画面 */
 #app.fullscreen .header,
 #app.fullscreen .status {
   opacity: 0;
-}
-
-#app.fullscreen .toolbar {
-  opacity: 1;
 }
 
 #app.fullscreen.controlsHidden .toolbar {
@@ -260,16 +252,11 @@ input[type="range"] {
   opacity: 0;
 }
 
-#app.fullscreen .settings.open {
-  display: block;
-}
-
-/* 接続案内 */
 .centerMessage {
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%,-50%);
   text-align: center;
   pointer-events: none;
   z-index: 4;
@@ -281,7 +268,7 @@ input[type="range"] {
   font-size: 11px;
   letter-spacing: 3px;
   font-weight: 500;
-  color: rgba(190, 202, 255, .7);
+  color: rgba(190,202,255,.7);
 }
 
 .centerMessage small {
@@ -289,7 +276,7 @@ input[type="range"] {
   margin-top: 8px;
   font-size: 9px;
   letter-spacing: 1px;
-  color: rgba(130, 145, 190, .55);
+  color: rgba(130,145,190,.55);
 }
 
 .centerMessage.hidden {
@@ -297,16 +284,12 @@ input[type="range"] {
 }
 
 @media (max-width: 600px) {
-  .header {
+  .header, .status {
     left: 15px;
   }
 
   .toolbar {
     right: 12px;
-  }
-
-  .status {
-    left: 15px;
   }
 
   .btn {
@@ -333,7 +316,7 @@ input[type="range"] {
     <p>AUDIO VISUALIZER</p>
   </div>
 
-  <div class="status" id="status">
+  <div class="status">
     INPUT : <span id="statusText">WAITING</span>
   </div>
 
@@ -342,10 +325,10 @@ input[type="range"] {
     <small>START MICROPHONE TO BEGIN</small>
   </div>
 
-  <div class="toolbar" id="toolbar">
+  <div class="toolbar">
     <button class="btn primary" id="micBtn">マイク開始</button>
-    <button class="btn iconBtn" id="settingsBtn" aria-label="設定">⚙</button>
-    <button class="btn iconBtn" id="fullscreenBtn" aria-label="全画面">⛶</button>
+    <button class="btn iconBtn" id="settingsBtn">⚙</button>
+    <button class="btn iconBtn" id="fullscreenBtn">⛶</button>
   </div>
 
   <div class="settings" id="settings">
@@ -354,17 +337,25 @@ input[type="range"] {
     <div class="setting">
       <div class="settingHead">
         <label for="gain">入力レベル</label>
-        <output id="gainValue">1.0x</output>
+        <output id="gainValue">100%</output>
       </div>
-      <input id="gain" type="range" min="0.5" max="8" step="0.1" value="1">
+      <input id="gain" type="range"
+        min="0" max="8" step="0.05" value="1">
+      <div class="rangeEnds">
+        <span>0%</span><span>800%</span>
+      </div>
     </div>
 
     <div class="setting">
       <div class="settingHead">
         <label for="sensitivity">感度</label>
-        <output id="sensitivityValue">1.8x</output>
+        <output id="sensitivityValue">180%</output>
       </div>
-      <input id="sensitivity" type="range" min="0.5" max="5" step="0.1" value="1.8">
+      <input id="sensitivity" type="range"
+        min="0" max="5" step="0.05" value="1.8">
+      <div class="rangeEnds">
+        <span>0%</span><span>500%</span>
+      </div>
     </div>
 
     <div class="setting">
@@ -372,11 +363,16 @@ input[type="range"] {
         <label for="smooth">滑らかさ</label>
         <output id="smoothValue">0.72</output>
       </div>
-      <input id="smooth" type="range" min="0" max="0.95" step="0.01" value="0.72">
+      <input id="smooth" type="range"
+        min="0" max="0.95" step="0.01" value="0.72">
     </div>
 
     <div class="meterGroup">
       <div class="meterTitle">INPUT LEVEL</div>
+      <div class="meterLabel">
+        <span>MICROPHONE SIGNAL</span>
+        <span id="inputValue">0%</span>
+      </div>
       <div class="meterTrack">
         <div class="meterFill" id="inputMeter"></div>
       </div>
@@ -416,7 +412,8 @@ input[type="range"] {
       </div>
     </div>
 
-    <button class="btn" id="reconnectBtn" style="width:100%; margin-top:18px;">
+    <button class="btn" id="reconnectBtn"
+      style="width:100%; margin-top:20px;">
       マイクを再取得
     </button>
   </div>
@@ -433,25 +430,23 @@ const app = $("app");
 const canvas = $("canvas");
 const ctx = canvas.getContext("2d");
 
-const micBtn = $("micBtn");
-const settingsBtn = $("settingsBtn");
-const fullscreenBtn = $("fullscreenBtn");
 const settings = $("settings");
+const micBtn = $("micBtn");
 
 let audioContext = null;
 let source = null;
 let gainNode = null;
 let analyser = null;
 let stream = null;
-
 let frequencyData = null;
-let smoothData = [];
-let peakData = [];
 
 let width = 0;
 let height = 0;
 let dpr = 1;
-let animationId = 0;
+
+let smoothData = [];
+let peakData = [];
+
 let isRunning = false;
 
 let gainValue = 1;
@@ -459,11 +454,10 @@ let sensitivity = 1.8;
 let smoothing = 0.72;
 
 let hideTimer = null;
-let lastTouch = 0;
 
 const BAR_COUNT = 100;
 
-/* サイズ調整 */
+/* Canvasサイズ */
 function resizeCanvas() {
   const rect = canvas.getBoundingClientRect();
 
@@ -476,8 +470,8 @@ function resizeCanvas() {
 
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-  smoothData = [];
-  peakData = [];
+  smoothData = new Array(BAR_COUNT).fill(0);
+  peakData = new Array(BAR_COUNT).fill(0);
 }
 
 if ("ResizeObserver" in window) {
@@ -488,12 +482,12 @@ if ("ResizeObserver" in window) {
 
 resizeCanvas();
 
-/* マイク取得 */
+/* マイク */
 async function startMicrophone() {
   try {
     micBtn.textContent = "接続中...";
 
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    if (!navigator.mediaDevices?.getUserMedia) {
       throw new Error("この環境ではマイクを利用できません。HTTPS接続を確認してください。");
     }
 
@@ -516,7 +510,9 @@ async function startMicrophone() {
       }
     });
 
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    const AudioContextClass =
+      window.AudioContext || window.webkitAudioContext;
+
     audioContext = new AudioContextClass();
 
     if (audioContext.state === "suspended") {
@@ -546,9 +542,7 @@ async function startMicrophone() {
 
     $("statusText").textContent = "CONNECTED";
     $("centerMessage").classList.add("hidden");
-
     micBtn.textContent = "マイク接続済み";
-    micBtn.classList.add("primary");
 
   } catch (error) {
     console.error(error);
@@ -558,20 +552,17 @@ async function startMicrophone() {
   }
 }
 
-micBtn.addEventListener("click", async () => {
-  await startMicrophone();
-});
+micBtn.addEventListener("click", startMicrophone);
+$("reconnectBtn").addEventListener("click", startMicrophone);
 
-$("reconnectBtn").addEventListener("click", async () => {
-  await startMicrophone();
-});
-
-/* スライダー */
+/* 入力レベル */
 $("gain").addEventListener("input", e => {
   gainValue = Number(e.target.value);
-  $("gainValue").textContent = gainValue.toFixed(1) + "x";
 
-  if (gainNode) {
+  $("gainValue").textContent =
+    Math.round(gainValue * 100) + "%";
+
+  if (gainNode && audioContext) {
     gainNode.gain.setTargetAtTime(
       gainValue,
       audioContext.currentTime,
@@ -580,19 +571,24 @@ $("gain").addEventListener("input", e => {
   }
 });
 
+/* 感度 */
 $("sensitivity").addEventListener("input", e => {
   sensitivity = Number(e.target.value);
-  $("sensitivityValue").textContent = sensitivity.toFixed(1) + "x";
+
+  $("sensitivityValue").textContent =
+    Math.round(sensitivity * 100) + "%";
 });
 
+/* 滑らかさ */
 $("smooth").addEventListener("input", e => {
   smoothing = Number(e.target.value);
   $("smoothValue").textContent = smoothing.toFixed(2);
 });
 
-/* 設定 */
-settingsBtn.addEventListener("click", e => {
+/* 設定パネル */
+$("settingsBtn").addEventListener("click", e => {
   e.stopPropagation();
+
   settings.classList.toggle("open");
 
   if (settings.classList.contains("open")) {
@@ -602,8 +598,8 @@ settingsBtn.addEventListener("click", e => {
   }
 });
 
-/* 全画面モード */
-fullscreenBtn.addEventListener("click", e => {
+/* 全画面 */
+$("fullscreenBtn").addEventListener("click", e => {
   e.stopPropagation();
 
   app.classList.toggle("fullscreen");
@@ -617,7 +613,7 @@ fullscreenBtn.addEventListener("click", e => {
   }
 });
 
-/* 操作メニューの自動表示・非表示 */
+/* メニュー表示 */
 function showControls() {
   app.classList.remove("controlsHidden");
   clearTimeout(hideTimer);
@@ -643,11 +639,9 @@ function scheduleHide() {
   }
 }
 
-/* 全画面時は画面タップで操作を表示 */
+/* タップでメニュー表示 */
 app.addEventListener("pointerdown", e => {
   if (!app.classList.contains("fullscreen")) return;
-
-  lastTouch = Date.now();
 
   if (settings.contains(e.target)) {
     showControls();
@@ -666,21 +660,9 @@ app.addEventListener("pointerdown", e => {
   }
 });
 
-/* 周波数の取得 */
-function getFrequencyAt(hz) {
-  if (!analyser || !frequencyData || !audioContext) return 0;
-
-  const index = Math.round(
-    hz * analyser.fftSize / audioContext.sampleRate
-  );
-
-  return frequencyData[
-    Math.max(0, Math.min(frequencyData.length - 1, index))
-  ] || 0;
-}
-
+/* 周波数平均 */
 function averageFrequency(startHz, endHz) {
-  if (!audioContext || !frequencyData) return 0;
+  if (!audioContext || !frequencyData || !analyser) return 0;
 
   const start = Math.max(
     0,
@@ -703,7 +685,7 @@ function averageFrequency(startHz, endHz) {
   return count ? total / count : 0;
 }
 
-/* バーの周波数分布 */
+/* 各バーの周波数 */
 function getBarValue(index) {
   const minHz = 35;
   const maxHz = 15000;
@@ -735,8 +717,31 @@ function getBarValue(index) {
   return count ? sum / count : 0;
 }
 
+/* メーター更新 */
+function updateMeters() {
+  if (!isRunning || !analyser) return;
+
+  const low = averageFrequency(35, 250);
+  const mid = averageFrequency(250, 3500);
+  const high = averageFrequency(3500, 12000);
+
+  const input = (low + mid + high) / 3;
+
+  function setMeter(id, valueId, value) {
+    const percent = Math.min(100, value / 255 * 100);
+
+    $(id).style.width = percent + "%";
+    $(valueId).textContent = Math.round(percent) + "%";
+  }
+
+  setMeter("inputMeter", "inputValue", input);
+  setMeter("lowMeter", "lowValue", low);
+  setMeter("midMeter", "midValue", mid);
+  setMeter("highMeter", "highValue", high);
+}
+
 /* 背景 */
-function drawBackground(time) {
+function drawBackground() {
   const bg = ctx.createRadialGradient(
     width * .5, height * .47, 0,
     width * .5, height * .47, Math.max(width, height) * .75
@@ -759,12 +764,10 @@ function drawBackground(time) {
 
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, width, height);
-
-  drawFloor(time);
 }
 
-/* 湾曲した床のグリッド */
-function drawFloor(time) {
+/* 湾曲した床 */
+function drawFloor() {
   const centerX = width / 2;
   const baseY = height * .70;
   const floorHeight = height * .23;
@@ -782,7 +785,8 @@ function drawFloor(time) {
       width, y + 30
     );
 
-    ctx.strokeStyle = `rgba(100,130,220,${.045 + depth * .025})`;
+    ctx.strokeStyle =
+      `rgba(100,130,220,${.045 + depth * .025})`;
     ctx.lineWidth = 1;
     ctx.stroke();
   }
@@ -808,30 +812,26 @@ function drawFloor(time) {
 }
 
 /* Spectrum */
-function drawSpectrum(time) {
+function drawSpectrum() {
   const centerX = width / 2;
-
   const compact = Math.min(width, height);
-  const maxBarHeight = Math.min(height * .49, compact * .70);
 
-  // 以前より横幅を広く使う
+  const maxBarHeight = Math.min(
+    height * .49,
+    compact * .70
+  );
+
   const spread = width * .91;
   const barWidth = Math.max(2, spread / BAR_COUNT * .70);
-
   const baseY = height * .69;
-
-  const idle = !isRunning;
 
   for (let i = 0; i < BAR_COUNT; i++) {
     let value = 0;
 
-    if (!idle && analyser) {
+    if (isRunning && analyser && frequencyData) {
       value = getBarValue(i) / 255;
       value *= sensitivity;
-
       value = Math.min(1, value);
-    } else {
-      value = .025 + Math.sin(time * .0015 + i * .13) * .012;
     }
 
     const eased = smoothing;
@@ -850,14 +850,13 @@ function drawSpectrum(time) {
     const normalizedX = (i / (BAR_COUNT - 1)) * 2 - 1;
     const distance = Math.abs(normalizedX);
 
-    // 中央が手前、両端が奥へ向かう湾曲
     const curve = 1 - Math.pow(distance, 1.65) * .19;
 
     const x = centerX + normalizedX * spread * .5;
     const y = baseY + Math.pow(distance, 2) * height * .035;
 
     const barHeight = Math.max(
-      2,
+      0,
       level * maxBarHeight * curve
     );
 
@@ -866,33 +865,39 @@ function drawSpectrum(time) {
     const hue = 226 + (1 - distance) * 36;
     const alpha = .72 + (1 - distance) * .25;
 
-    const gradient = ctx.createLinearGradient(
-      x, y - barHeight,
-      x, y
-    );
+    if (barHeight > .5) {
+      const gradient = ctx.createLinearGradient(
+        x, y - barHeight, x, y
+      );
 
-    gradient.addColorStop(0, `hsla(${hue + 18}, 100%, 88%, ${alpha})`);
-    gradient.addColorStop(.3, `hsla(${hue}, 95%, 72%, ${alpha})`);
-    gradient.addColorStop(1, `hsla(${hue - 5}, 85%, 43%, .75)`);
+      gradient.addColorStop(
+        0, `hsla(${hue + 18},100%,88%,${alpha})`
+      );
+      gradient.addColorStop(
+        .3, `hsla(${hue},95%,72%,${alpha})`
+      );
+      gradient.addColorStop(
+        1, `hsla(${hue - 5},85%,43%,.75)`
+      );
 
-    // 発光
-    ctx.save();
-    ctx.shadowColor = `hsla(${hue}, 100%, 70%, .65)`;
-    ctx.shadowBlur = 9 + level * 17;
+      ctx.save();
+      ctx.shadowColor = `hsla(${hue},100%,70%,.65)`;
+      ctx.shadowBlur = 9 + level * 17;
+      ctx.fillStyle = gradient;
 
-    ctx.fillStyle = gradient;
-    ctx.fillRect(
-      x - barWidth / 2,
-      y - barHeight,
-      barWidth,
-      barHeight
-    );
+      ctx.fillRect(
+        x - barWidth / 2,
+        y - barHeight,
+        barWidth,
+        barHeight
+      );
 
-    ctx.restore();
+      ctx.restore();
+    }
 
-    // ピークライン
     if (peakHeight > 3) {
-      ctx.fillStyle = `hsla(${hue + 20}, 100%, 88%, .8)`;
+      ctx.fillStyle = `hsla(${hue + 20},100%,88%,.8)`;
+
       ctx.fillRect(
         x - barWidth / 2,
         y - peakHeight - 2,
@@ -901,17 +906,20 @@ function drawSpectrum(time) {
       );
     }
 
-    // 床への反射
     if (level > .06) {
       const reflection = ctx.createLinearGradient(
-        x, y,
-        x, y + height * .13
+        x, y, x, y + height * .13
       );
 
-      reflection.addColorStop(0, `hsla(${hue}, 90%, 70%, .12)`);
-      reflection.addColorStop(1, `hsla(${hue}, 90%, 60%, 0)`);
+      reflection.addColorStop(
+        0, `hsla(${hue},90%,70%,.12)`
+      );
+      reflection.addColorStop(
+        1, `hsla(${hue},90%,60%,0)`
+      );
 
       ctx.fillStyle = reflection;
+
       ctx.fillRect(
         x - barWidth / 2,
         y + 1,
@@ -921,7 +929,7 @@ function drawSpectrum(time) {
     }
   }
 
-  // 中央の水平ライン
+  /* 中央ライン */
   ctx.save();
 
   const lineGradient = ctx.createLinearGradient(
@@ -943,33 +951,9 @@ function drawSpectrum(time) {
   ctx.restore();
 }
 
-/* メーター */
-function updateMeters() {
-  if (!isRunning || !analyser) return;
-
-  analyser.getByteFrequencyData(frequencyData);
-
-  const low = averageFrequency(35, 250);
-  const mid = averageFrequency(250, 3500);
-  const high = averageFrequency(3500, 12000);
-
-  const input = Math.max(low, mid, high);
-
-  const setMeter = (id, valueId, value) => {
-    const percent = Math.min(100, value / 255 * 100);
-    $(id).style.width = percent + "%";
-    $(valueId).textContent = Math.round(percent) + "%";
-  };
-
-  setMeter("inputMeter", "inputMeter", input);
-  setMeter("lowMeter", "lowValue", low);
-  setMeter("midMeter", "midValue", mid);
-  setMeter("highMeter", "highValue", high);
-}
-
 /* 描画ループ */
-function draw(time) {
-  animationId = requestAnimationFrame(draw);
+function draw() {
+  requestAnimationFrame(draw);
 
   if (!width || !height) return;
 
@@ -978,16 +962,20 @@ function draw(time) {
     updateMeters();
   }
 
-  drawBackground(time);
-  drawSpectrum(time);
+  drawBackground();
+  drawFloor();
+  drawSpectrum();
 }
 
-cancelAnimationFrame(animationId);
-draw(0);
+draw();
 
-/* 画面の向き・復帰 */
+/* iPad復帰時 */
 document.addEventListener("visibilitychange", async () => {
-  if (!document.hidden && audioContext && audioContext.state === "suspended") {
+  if (
+    !document.hidden &&
+    audioContext &&
+    audioContext.state === "suspended"
+  ) {
     try {
       await audioContext.resume();
     } catch (e) {}
