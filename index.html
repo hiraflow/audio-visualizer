@@ -11,7 +11,7 @@
 <style>
 :root {
   --bg: #050711;
-  --panel: rgba(15, 19, 36, .94);
+  --panel: rgba(15, 19, 36, .95);
   --line: rgba(150, 170, 255, .16);
   --text: #e9edff;
 }
@@ -31,7 +31,7 @@ html, body {
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-button, input { font: inherit; }
+button, input, select { font: inherit; }
 
 #app {
   position: relative;
@@ -196,6 +196,29 @@ input[type="range"] {
   margin-top: 5px;
 }
 
+select {
+  width: 100%;
+  padding: 12px 13px;
+  color: #e9edff;
+  background: rgba(35,43,76,.85);
+  border: 1px solid rgba(150,170,255,.2);
+  border-radius: 10px;
+  outline: none;
+  font-size: 12px;
+}
+
+select option {
+  background: #151b31;
+  color: #e9edff;
+}
+
+.settingDescription {
+  margin-top: 9px;
+  font-size: 10px;
+  line-height: 1.6;
+  color: #7885aa;
+}
+
 #app.fullscreen .header,
 #app.fullscreen .status {
   opacity: 0;
@@ -280,9 +303,26 @@ input[type="range"] {
     <button class="btn iconBtn" id="fullscreenBtn">⛶</button>
   </div>
 
-  <!-- 設定メニュー -->
   <div class="settings" id="settings">
     <h2>VISUALIZER SETTINGS</h2>
+
+    <div class="setting">
+      <div class="settingHead">
+        <label for="effectSelect">演出モード</label>
+      </div>
+
+      <select id="effectSelect">
+        <option value="spectrum">Spectrum</option>
+        <option value="mirror">Mirror</option>
+        <option value="wave">Wave</option>
+        <option value="radial">Radial</option>
+        <option value="particles">Particles</option>
+      </select>
+
+      <div class="settingDescription" id="effectDescription">
+        音の周波数に合わせて光のバーが動く基本表示
+      </div>
+    </div>
 
     <div class="setting">
       <div class="settingHead">
@@ -327,7 +367,6 @@ input[type="range"] {
         <span>最大</span>
       </div>
     </div>
-
   </div>
 </div>
 
@@ -356,19 +395,41 @@ let dpr = 1;
 
 let smoothData = [];
 let peakData = [];
+let particles = [];
 
 let isRunning = false;
-
 let gainValue = 3;
 let sensitivity = 1.5;
 const smoothing = 0.72;
 
 let hideTimer = null;
 let globalGlow = 0;
+let animationTime = 0;
+
+let currentEffect = "spectrum";
 
 const BAR_COUNT = 100;
 const MIN_HZ = 35;
 const MAX_HZ = 12000;
+
+const effectDescriptions = {
+  spectrum: "音の周波数に合わせて光のバーが動く基本表示",
+  mirror: "上下対称にバーが伸び、音の動きを立体的に表現",
+  wave: "滑らかな光の波が音に合わせて流れる表示",
+  radial: "円形に広がるスペクトラム。中央を囲むように反応",
+  particles: "音に合わせて光の粒子が広がる幻想的な表示"
+};
+
+/* 演出切り替え */
+$("effectSelect").addEventListener("change", e => {
+  currentEffect = e.target.value;
+  $("effectDescription").textContent =
+    effectDescriptions[currentEffect];
+
+  smoothData.fill(0);
+  peakData.fill(0);
+  particles = [];
+});
 
 /* スライダー */
 function updateGainFromSlider() {
@@ -483,6 +544,7 @@ async function startMicrophone() {
 
     smoothData = new Array(BAR_COUNT).fill(0);
     peakData = new Array(BAR_COUNT).fill(0);
+    particles = [];
 
     globalGlow = 0;
     isRunning = true;
@@ -563,7 +625,6 @@ function drawBackground() {
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, width, height);
 
-  /* 全体に広がる音連動の光 */
   const glow = ctx.createRadialGradient(
     width * .5, height * .52, 0,
     width * .5, height * .52, width * .72
@@ -571,39 +632,26 @@ function drawBackground() {
 
   const intensity = globalGlow;
 
-  glow.addColorStop(
-    0,
-    `rgba(85,115,255,${.10 + intensity * .24})`
-  );
-  glow.addColorStop(
-    .45,
-    `rgba(65,95,220,${.055 + intensity * .13})`
-  );
-  glow.addColorStop(
-    1,
-    "rgba(40,60,130,0)"
-  );
+  glow.addColorStop(0, `rgba(85,115,255,${.10 + intensity * .24})`);
+  glow.addColorStop(.45, `rgba(65,95,220,${.055 + intensity * .13})`);
+  glow.addColorStop(1, "rgba(40,60,130,0)");
 
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, width, height);
 
-  /* 中央の柔らかい光 */
   const centerGlow = ctx.createRadialGradient(
     width * .5, height * .68, 0,
     width * .5, height * .68, width * .42
   );
 
-  centerGlow.addColorStop(
-    0,
-    `rgba(105,130,255,${.07 + intensity * .22})`
-  );
+  centerGlow.addColorStop(0, `rgba(105,130,255,${.07 + intensity * .22})`);
   centerGlow.addColorStop(1, "rgba(50,70,180,0)");
 
   ctx.fillStyle = centerGlow;
   ctx.fillRect(0, 0, width, height);
 }
 
-/* 湾曲した床 */
+/* 床 */
 function drawFloor() {
   const centerX = width / 2;
   const baseY = height * .70;
@@ -617,13 +665,9 @@ function drawFloor() {
 
     ctx.beginPath();
     ctx.moveTo(0, y + 30);
-    ctx.quadraticCurveTo(
-      centerX, y - 35 - depth * 12,
-      width, y + 30
-    );
+    ctx.quadraticCurveTo(centerX, y - 35 - depth * 12, width, y + 30);
 
-    ctx.strokeStyle =
-      `rgba(100,130,220,${.045 + depth * .025})`;
+    ctx.strokeStyle = `rgba(100,130,220,${.045 + depth * .025})`;
     ctx.lineWidth = 1;
     ctx.stroke();
   }
@@ -648,20 +692,8 @@ function drawFloor() {
   ctx.restore();
 }
 
-/* Spectrum */
-function drawSpectrum() {
-  const centerX = width / 2;
-  const compact = Math.min(width, height);
-
-  const maxBarHeight = Math.min(
-    height * .49,
-    compact * .70
-  );
-
-  const spread = width * .91;
-  const barWidth = Math.max(2, spread / BAR_COUNT * .70);
-  const baseY = height * .69;
-
+/* データ更新 */
+function updateSpectrumData() {
   for (let i = 0; i < BAR_COUNT; i++) {
     let value = 0;
 
@@ -675,105 +707,83 @@ function drawSpectrum() {
       smoothData[i] * smoothing +
       value * (1 - smoothing);
 
-    const level = smoothData[i];
-
     peakData[i] = Math.max(
-      level,
+      smoothData[i],
       peakData[i] - .0025
     );
+  }
+}
 
+/* 色 */
+function getHue(index) {
+  const normalizedX = index / (BAR_COUNT - 1);
+  const distance = Math.abs(normalizedX * 2 - 1);
+  return 226 + (1 - distance) * 36;
+}
+
+/* 1. Spectrum */
+function drawSpectrum() {
+  const centerX = width / 2;
+  const compact = Math.min(width, height);
+
+  const maxBarHeight = Math.min(height * .49, compact * .70);
+  const spread = width * .91;
+  const barWidth = Math.max(2, spread / BAR_COUNT * .70);
+  const baseY = height * .69;
+
+  for (let i = 0; i < BAR_COUNT; i++) {
+    const level = smoothData[i];
     const normalizedX = (i / (BAR_COUNT - 1)) * 2 - 1;
     const distance = Math.abs(normalizedX);
 
     const curve = 1 - Math.pow(distance, 1.65) * .19;
-
     const x = centerX + normalizedX * spread * .5;
     const y = baseY + Math.pow(distance, 2) * height * .035;
 
     const barHeight = level * maxBarHeight * curve;
     const peakHeight = peakData[i] * maxBarHeight * curve;
-
-    const hue = 226 + (1 - distance) * 36;
-    const alpha = .72 + (1 - distance) * .25;
+    const hue = getHue(i);
 
     if (barHeight > .5) {
-      const gradient = ctx.createLinearGradient(
-        x, y - barHeight, x, y
-      );
+      const gradient = ctx.createLinearGradient(x, y - barHeight, x, y);
 
-      gradient.addColorStop(
-        0, `hsla(${hue + 18},100%,88%,${alpha})`
-      );
-      gradient.addColorStop(
-        .3, `hsla(${hue},95%,72%,${alpha})`
-      );
-      gradient.addColorStop(
-        1, `hsla(${hue - 5},85%,43%,.75)`
-      );
+      gradient.addColorStop(0, `hsla(${hue + 18},100%,88%,.97)`);
+      gradient.addColorStop(.3, `hsla(${hue},95%,72%,.9)`);
+      gradient.addColorStop(1, `hsla(${hue - 5},85%,43%,.75)`);
 
       ctx.save();
       ctx.shadowColor = `hsla(${hue},100%,70%,.75)`;
       ctx.shadowBlur = 12 + level * 23;
       ctx.fillStyle = gradient;
 
-      ctx.fillRect(
-        x - barWidth / 2,
-        y - barHeight,
-        barWidth,
-        barHeight
-      );
-
+      ctx.fillRect(x - barWidth / 2, y - barHeight, barWidth, barHeight);
       ctx.restore();
     }
 
     if (peakHeight > 3) {
       ctx.fillStyle = `hsla(${hue + 20},100%,88%,.8)`;
-
-      ctx.fillRect(
-        x - barWidth / 2,
-        y - peakHeight - 2,
-        barWidth,
-        2
-      );
+      ctx.fillRect(x - barWidth / 2, y - peakHeight - 2, barWidth, 2);
     }
 
     if (level > .06) {
-      const reflection = ctx.createLinearGradient(
-        x, y, x, y + height * .13
-      );
-
-      reflection.addColorStop(
-        0, `hsla(${hue},90%,70%,.17)`
-      );
-      reflection.addColorStop(
-        1, `hsla(${hue},90%,60%,0)`
-      );
+      const reflection = ctx.createLinearGradient(x, y, x, y + height * .13);
+      reflection.addColorStop(0, `hsla(${hue},90%,70%,.17)`);
+      reflection.addColorStop(1, `hsla(${hue},90%,60%,0)`);
 
       ctx.fillStyle = reflection;
-
-      ctx.fillRect(
-        x - barWidth / 2,
-        y + 1,
-        barWidth,
-        height * .13
-      );
+      ctx.fillRect(x - barWidth / 2, y + 1, barWidth, height * .13);
     }
   }
 
-  /* 中央ライン */
   ctx.save();
 
-  const lineGradient = ctx.createLinearGradient(
-    0, 0, width, 0
-  );
-
+  const lineGradient = ctx.createLinearGradient(0, 0, width, 0);
   lineGradient.addColorStop(0, "rgba(100,130,255,0)");
   lineGradient.addColorStop(.5, "rgba(150,175,255,.45)");
   lineGradient.addColorStop(1, "rgba(100,130,255,0)");
 
   ctx.strokeStyle = lineGradient;
   ctx.lineWidth = 1;
-
   ctx.beginPath();
   ctx.moveTo(0, baseY);
   ctx.quadraticCurveTo(centerX, baseY - 22, width, baseY);
@@ -782,18 +792,274 @@ function drawSpectrum() {
   ctx.restore();
 }
 
+/* 2. Mirror */
+function drawMirror() {
+  const centerX = width / 2;
+  const centerY = height * .51;
+  const spread = width * .91;
+  const barWidth = Math.max(2, spread / BAR_COUNT * .68);
+  const maxHeight = Math.min(height * .32, width * .38);
+
+  for (let i = 0; i < BAR_COUNT; i++) {
+    const level = smoothData[i];
+    const x = centerX - spread / 2 + (i / BAR_COUNT) * spread;
+    const h = level * maxHeight;
+    const hue = getHue(i);
+
+    const gradient = ctx.createLinearGradient(x, centerY - h, x, centerY + h);
+    gradient.addColorStop(0, `hsla(${hue + 20},100%,85%,.95)`);
+    gradient.addColorStop(.5, `hsla(${hue},95%,65%,.85)`);
+    gradient.addColorStop(1, `hsla(${hue - 10},90%,80%,.95)`);
+
+    ctx.save();
+    ctx.shadowColor = `hsla(${hue},100%,70%,.7)`;
+    ctx.shadowBlur = 8 + level * 20;
+    ctx.fillStyle = gradient;
+
+    ctx.fillRect(x, centerY - h, barWidth, h);
+    ctx.fillRect(x, centerY, barWidth, h);
+    ctx.restore();
+
+    const peak = peakData[i] * maxHeight;
+
+    ctx.fillStyle = `hsla(${hue + 20},100%,90%,.7)`;
+    ctx.fillRect(x, centerY - peak - 2, barWidth, 2);
+    ctx.fillRect(x, centerY + peak, barWidth, 2);
+  }
+
+  const line = ctx.createLinearGradient(0, 0, width, 0);
+  line.addColorStop(0, "rgba(100,130,255,0)");
+  line.addColorStop(.5, "rgba(170,190,255,.65)");
+  line.addColorStop(1, "rgba(100,130,255,0)");
+
+  ctx.strokeStyle = line;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, centerY);
+  ctx.lineTo(width, centerY);
+  ctx.stroke();
+}
+
+/* 3. Wave */
+function drawWave() {
+  const centerY = height * .53;
+  const spread = width * .90;
+  const amplitude = Math.min(height * .32, width * .38);
+
+  const layers = [
+    { scale: 1, alpha: .85, width: 2.2, offset: 0 },
+    { scale: .72, alpha: .34, width: 1.4, offset: 1.4 },
+    { scale: .46, alpha: .18, width: 1, offset: 2.8 }
+  ];
+
+  layers.forEach((layer, layerIndex) => {
+    ctx.beginPath();
+
+    for (let i = 0; i < BAR_COUNT; i++) {
+      const x = width / 2 - spread / 2 + (i / (BAR_COUNT - 1)) * spread;
+      const level = smoothData[i];
+      const wave = Math.sin(i * .11 + animationTime * .018 + layer.offset) * 5;
+      const y = centerY - level * amplitude * layer.scale + wave;
+
+      if (i === 0) ctx.moveTo(x, y);
+      else {
+        const prevX = width / 2 - spread / 2 + ((i - 1) / (BAR_COUNT - 1)) * spread;
+        const prevLevel = smoothData[i - 1];
+        const prevWave = Math.sin((i - 1) * .11 + animationTime * .018 + layer.offset) * 5;
+        const prevY = centerY - prevLevel * amplitude * layer.scale + prevWave;
+
+        const midX = (prevX + x) / 2;
+        const midY = (prevY + y) / 2;
+        ctx.quadraticCurveTo(prevX, prevY, midX, midY);
+      }
+    }
+
+    ctx.strokeStyle = `rgba(145,175,255,${layer.alpha})`;
+    ctx.lineWidth = layer.width;
+    ctx.shadowColor = "rgba(105,145,255,.8)";
+    ctx.shadowBlur = 12 + layerIndex * 5;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  });
+
+  /* 波の下側の光 */
+  ctx.beginPath();
+  ctx.moveTo(0, centerY);
+
+  for (let i = 0; i < BAR_COUNT; i++) {
+    const x = width / 2 - spread / 2 + (i / (BAR_COUNT - 1)) * spread;
+    const y = centerY + smoothData[i] * amplitude * .55;
+    ctx.lineTo(x, y);
+  }
+
+  ctx.lineTo(width, centerY);
+  ctx.closePath();
+
+  const fill = ctx.createLinearGradient(0, centerY, 0, height);
+  fill.addColorStop(0, "rgba(100,140,255,.13)");
+  fill.addColorStop(1, "rgba(60,90,200,0)");
+
+  ctx.fillStyle = fill;
+  ctx.fill();
+}
+
+/* 4. Radial */
+function drawRadial() {
+  const cx = width / 2;
+  const cy = height / 2;
+  const baseRadius = Math.min(width, height) * .20;
+  const maxLength = Math.min(width, height) * .22;
+
+  ctx.save();
+
+  /* 中央のリング */
+  const ring = ctx.createRadialGradient(
+    cx, cy, baseRadius * .8,
+    cx, cy, baseRadius * 1.25
+  );
+
+  ring.addColorStop(0, "rgba(100,130,255,0)");
+  ring.addColorStop(.8, "rgba(100,145,255,.08)");
+  ring.addColorStop(1, "rgba(150,180,255,.45)");
+
+  ctx.fillStyle = ring;
+  ctx.beginPath();
+  ctx.arc(cx, cy, baseRadius * 1.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = "rgba(145,170,255,.22)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(cx, cy, baseRadius, 0, Math.PI * 2);
+  ctx.stroke();
+
+  for (let i = 0; i < BAR_COUNT; i++) {
+    const angle = (i / BAR_COUNT) * Math.PI * 2 - Math.PI / 2;
+    const level = smoothData[i];
+    const length = level * maxLength;
+    const hue = getHue(i);
+
+    const x1 = cx + Math.cos(angle) * baseRadius;
+    const y1 = cy + Math.sin(angle) * baseRadius;
+    const x2 = cx + Math.cos(angle) * (baseRadius + length);
+    const y2 = cy + Math.sin(angle) * (baseRadius + length);
+
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+
+    ctx.strokeStyle = `hsla(${hue},100%,75%,${.4 + level * .6})`;
+    ctx.lineWidth = Math.max(2, Math.min(5, width / 180));
+    ctx.lineCap = "round";
+    ctx.shadowColor = `hsla(${hue},100%,70%,.85)`;
+    ctx.shadowBlur = 7 + level * 18;
+    ctx.stroke();
+
+    if (level > .25) {
+      ctx.beginPath();
+      ctx.arc(x2, y2, 1.5 + level * 2, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${hue + 10},100%,90%,.9)`;
+      ctx.fill();
+    }
+  }
+
+  ctx.shadowBlur = 0;
+
+  /* 中央の光 */
+  const core = ctx.createRadialGradient(
+    cx, cy, 0,
+    cx, cy, baseRadius * .8
+  );
+
+  core.addColorStop(0, "rgba(120,155,255,.22)");
+  core.addColorStop(.65, "rgba(75,105,220,.08)");
+  core.addColorStop(1, "rgba(60,80,180,0)");
+
+  ctx.fillStyle = core;
+  ctx.beginPath();
+  ctx.arc(cx, cy, baseRadius * .8, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+/* 5. Particles */
+function drawParticles() {
+  const cx = width / 2;
+  const cy = height * .53;
+
+  const average = smoothData.reduce((a, b) => a + b, 0) / BAR_COUNT;
+
+  /* 音に応じて粒子を生成 */
+  if (isRunning && average > .025 && Math.random() < .35 + average * 1.5) {
+    const index = Math.floor(Math.random() * BAR_COUNT);
+    const angle = Math.random() * Math.PI * 2;
+    const speed = .5 + smoothData[index] * 3;
+
+    particles.push({
+      x: cx + Math.cos(angle) * 15,
+      y: cy + Math.sin(angle) * 15,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 1,
+      size: 1 + Math.random() * 2.5,
+      hue: getHue(index)
+    });
+  }
+
+  /* 粒子数を制限 */
+  if (particles.length > 240) {
+    particles.splice(0, particles.length - 240);
+  }
+
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+
+  particles.forEach(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vx *= .993;
+    p.vy *= .993;
+    p.life -= .006;
+
+    const alpha = Math.max(0, p.life);
+
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
+    ctx.fillStyle = `hsla(${p.hue},100%,80%,${alpha * .8})`;
+    ctx.shadowColor = `hsla(${p.hue},100%,70%,${alpha})`;
+    ctx.shadowBlur = 12;
+    ctx.fill();
+  });
+
+  particles = particles.filter(p => p.life > 0);
+
+  ctx.restore();
+
+  /* 中央の光 */
+  const radius = 25 + average * Math.min(width, height) * .28;
+
+  const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+  core.addColorStop(0, `rgba(150,180,255,${.08 + average * .35})`);
+  core.addColorStop(.5, `rgba(90,125,255,${.05 + average * .16})`);
+  core.addColorStop(1, "rgba(70,100,255,0)");
+
+  ctx.fillStyle = core;
+  ctx.fillRect(0, 0, width, height);
+}
+
 /* 描画 */
 function draw() {
   requestAnimationFrame(draw);
 
   if (!width || !height) return;
 
+  animationTime++;
+
   if (isRunning && analyser && frequencyData) {
     analyser.getByteFrequencyData(frequencyData);
 
     const low = getLowFrequency();
-
-    /* 低音に反応する全体光 */
     const targetGlow = Math.min(1, low * 2.2);
 
     globalGlow += (targetGlow - globalGlow) * .12;
@@ -801,9 +1067,32 @@ function draw() {
     globalGlow *= .96;
   }
 
+  updateSpectrumData();
+
   drawBackground();
-  drawFloor();
-  drawSpectrum();
+
+  switch (currentEffect) {
+    case "spectrum":
+      drawFloor();
+      drawSpectrum();
+      break;
+
+    case "mirror":
+      drawMirror();
+      break;
+
+    case "wave":
+      drawWave();
+      break;
+
+    case "radial":
+      drawRadial();
+      break;
+
+    case "particles":
+      drawParticles();
+      break;
+  }
 }
 
 draw();
