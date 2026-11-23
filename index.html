@@ -4,994 +4,817 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#050817">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Spectrum Visualizer X</title>
 
 <style>
-* {
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
+:root {
+  --bg:#050711;
+  --panel:rgba(12,17,36,.96);
+  --line:rgba(150,170,255,.18);
+  --text:#e9edff;
 }
-
-html, body {
-  margin: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background: #03050e;
-  color: #eef2ff;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{
+  margin:0;width:100%;height:100%;overflow:hidden;
+  background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
 }
-
-body {
-  position: relative;
+button,input,select{font:inherit}
+#app{
+  position:relative;width:100%;height:100%;height:100dvh;
+  overflow:hidden;background:#050711;
 }
-
-#visualizer {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
+#visualArea{position:absolute;inset:0;overflow:hidden;touch-action:manipulation}
+canvas{width:100%;height:100%;display:block}
+.header{
+  position:absolute;top:max(18px,env(safe-area-inset-top));
+  left:22px;z-index:5;pointer-events:none;transition:opacity .35s;
 }
-
-header {
-  position: absolute;
-  top: env(safe-area-inset-top, 0px);
-  left: 0;
-  right: 0;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  z-index: 5;
-  background: linear-gradient(to bottom, rgba(3,5,14,.75), transparent);
-  transition: opacity .4s;
+.header h1{
+  margin:0;font-size:13px;font-weight:600;letter-spacing:4px;
+  color:rgba(225,232,255,.8);
 }
-
-.logo {
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: #dce5ff;
+.header p{
+  margin:5px 0 0;font-size:9px;letter-spacing:2px;color:#687397;
 }
-
-.controls {
-  display: flex;
-  gap: 9px;
+.status{
+  position:absolute;left:22px;bottom:max(22px,env(safe-area-inset-bottom));
+  z-index:5;font-size:10px;letter-spacing:1.5px;color:#7683aa;
+  pointer-events:none;transition:opacity .35s;
 }
-
-.control-btn {
-  width: 42px;
-  height: 42px;
-  border: 1px solid rgba(160,180,255,.18);
-  border-radius: 14px;
-  background: rgba(25,35,75,.58);
-  color: #dce5ff;
-  font-size: 18px;
-  display: grid;
-  place-items: center;
-  backdrop-filter: blur(12px);
+.status span{color:#aab7ff}
+.toolbar{
+  position:absolute;z-index:30;top:max(16px,env(safe-area-inset-top));
+  right:16px;display:flex;gap:8px;align-items:center;
+  transition:opacity .35s,transform .35s;
 }
-
-.control-btn:active {
-  background: rgba(80,105,190,.55);
+.btn{
+  border:1px solid rgba(160,175,255,.2);
+  background:rgba(18,24,48,.84);color:#e7ebff;
+  border-radius:12px;padding:11px 14px;font-size:12px;
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  cursor:pointer;
 }
-
-#settings {
-  position: absolute;
-  z-index: 10;
-  top: calc(env(safe-area-inset-top, 0px) + 70px);
-  right: 14px;
-  width: min(290px, calc(100vw - 28px));
-  padding: 19px;
-  border: 1px solid rgba(150,170,255,.2);
-  border-radius: 20px;
-  background: rgba(9,14,34,.88);
-  backdrop-filter: blur(22px);
-  box-shadow: 0 15px 50px rgba(0,0,0,.35);
-  display: none;
+.btn.primary{
+  background:rgba(103,119,226,.28);
+  border-color:rgba(145,160,255,.4);
 }
-
-#settings.open {
-  display: block;
+.btn:active{transform:scale(.96)}
+.iconBtn{
+  width:42px;height:42px;padding:0;font-size:17px;
+  display:grid;place-items:center;
 }
-
-.settings-title {
-  font-size: 14px;
-  font-weight: 700;
-  margin-bottom: 18px;
-  letter-spacing: 1px;
+.settings{
+  position:absolute;z-index:25;
+  top:max(70px,calc(env(safe-area-inset-top) + 62px));
+  right:16px;width:min(320px,calc(100vw - 32px));
+  max-height:calc(100dvh - 100px);overflow-y:auto;
+  padding:20px;border-radius:18px;border:1px solid var(--line);
+  background:var(--panel);backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  box-shadow:0 18px 60px rgba(0,0,0,.4);display:none;
 }
-
-.setting {
-  margin-bottom: 20px;
+.settings.open{display:block}
+.settings h2{font-size:13px;letter-spacing:2px;margin:0 0 20px}
+.setting{margin:20px 0}
+.settingHead{
+  display:flex;justify-content:space-between;font-size:11px;
+  color:#b7c1e5;margin-bottom:11px;
 }
-
-.setting:last-child {
-  margin-bottom: 2px;
+.settingHead output{color:#aab7ff;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:#929fff;height:5px;cursor:pointer}
+.rangeEnds,.rangeScale{
+  display:flex;justify-content:space-between;font-size:9px;margin-top:6px;
 }
-
-.setting-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-  font-size: 12px;
-  color: #aebbe5;
+.rangeEnds{color:#687397}
+.rangeScale{color:#8792b5;margin-top:5px}
+select{
+  width:100%;padding:12px;color:#e9edff;
+  background:rgba(35,43,76,.85);
+  border:1px solid rgba(150,170,255,.2);
+  border-radius:10px;outline:none;font-size:12px;
 }
-
-.setting-value {
-  color: #e0e8ff;
-  font-variant-numeric: tabular-nums;
+select option{background:#151b31;color:#e9edff}
+.settingDescription{
+  margin-top:9px;font-size:10px;line-height:1.6;color:#7885aa;
 }
-
-select {
-  width: 100%;
-  padding: 11px 12px;
-  border: 1px solid rgba(150,170,255,.2);
-  border-radius: 10px;
-  color: #eaf0ff;
-  background: #111a38;
-  outline: none;
-  font-size: 13px;
+#app.fullscreen .header,#app.fullscreen .status{opacity:0}
+#app.fullscreen.controlsHidden .toolbar{
+  opacity:0;pointer-events:none;transform:translateY(-8px);
 }
-
-input[type="range"] {
-  width: 100%;
-  accent-color: #829cff;
-  height: 4px;
+#app.fullscreen.controlsHidden .header,
+#app.fullscreen.controlsHidden .status{opacity:0}
+.centerMessage{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  text-align:center;pointer-events:none;z-index:4;transition:opacity .4s;
 }
-
-#status {
-  position: absolute;
-  z-index: 4;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
-  left: 0;
-  right: 0;
-  text-align: center;
-  font-size: 11px;
-  color: rgba(190,205,255,.55);
-  letter-spacing: 1px;
-  pointer-events: none;
-  transition: opacity .4s;
+.centerMessage strong{
+  display:block;font-size:11px;letter-spacing:3px;font-weight:500;
+  color:rgba(190,202,255,.7);
 }
-
-.fullscreen header,
-.fullscreen #status {
-  opacity: 0;
-  pointer-events: none;
+.centerMessage small{
+  display:block;margin-top:8px;font-size:9px;letter-spacing:1px;
+  color:rgba(130,145,190,.55);
 }
-
-.fullscreen.controls-visible header,
-.fullscreen.controls-visible #status {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.fullscreen #settings {
-  top: calc(env(safe-area-inset-top, 0px) + 65px);
-}
-
-@media (max-width: 500px) {
-  header {
-    padding: 0 14px;
-  }
+.centerMessage.hidden{opacity:0}
+@media(max-width:600px){
+  .header,.status{left:15px}
+  .toolbar{right:12px}
+  .btn{padding:10px 11px}
+  .iconBtn{width:40px;height:40px}
 }
 </style>
 </head>
 
 <body>
+<div id="app">
+  <div id="visualArea"><canvas id="canvas"></canvas></div>
 
-<canvas id="visualizer"></canvas>
-
-<header id="header">
-  <div class="logo">SPECTRUM X</div>
-  <div class="controls">
-    <button class="control-btn" id="micButton" aria-label="マイク">◉</button>
-    <button class="control-btn" id="settingsButton" aria-label="設定">⚙</button>
-    <button class="control-btn" id="fullscreenButton" aria-label="全画面">⛶</button>
-  </div>
-</header>
-
-<div id="settings">
-  <div class="settings-title">VISUAL SETTINGS</div>
-
-  <div class="setting">
-    <div class="setting-head">
-      <span>エフェクト</span>
-    </div>
-    <select id="effectSelect">
-      <option value="spectrum">Spectrum X</option>
-      <option value="mirror">Mirror Pulse</option>
-      <option value="wave">Wave Flow</option>
-      <option value="radial">Hyper Radial</option>
-      <option value="particles">Particle Storm</option>
-    </select>
+  <div class="header">
+    <h1>SPECTRUM</h1>
+    <p>AUDIO VISUALIZER X</p>
   </div>
 
-  <div class="setting">
-    <div class="setting-head">
-      <span>入力レベル</span>
-      <span class="setting-value" id="gainValue">300%</span>
-    </div>
-    <input id="gainSlider" type="range" min="0" max="100" value="50">
+  <div class="status">INPUT : <span id="statusText">WAITING</span></div>
+
+  <div class="centerMessage" id="centerMessage">
+    <strong>READY TO VISUALIZE</strong>
+    <small>START MICROPHONE TO BEGIN</small>
   </div>
 
-  <div class="setting">
-    <div class="setting-head">
-      <span>感度</span>
-      <span class="setting-value" id="sensitivityValue">150%</span>
+  <div class="toolbar">
+    <button class="btn primary" id="micBtn">マイク開始</button>
+    <button class="btn iconBtn" id="settingsBtn">⚙</button>
+    <button class="btn iconBtn" id="fullscreenBtn">⛶</button>
+  </div>
+
+  <div class="settings" id="settings">
+    <h2>VISUALIZER SETTINGS</h2>
+
+    <div class="setting">
+      <div class="settingHead"><label for="effectSelect">演出モード</label></div>
+      <select id="effectSelect">
+        <option value="spectrum">Spectrum X</option>
+        <option value="mirror">Mirror Pulse</option>
+        <option value="wave">Wave Flow</option>
+        <option value="radial">Hyper Radial</option>
+        <option value="particles">Particle Storm</option>
+      </select>
+      <div class="settingDescription" id="effectDescription">
+        立体バーと残光を組み合わせたスペクトラム
+      </div>
     </div>
-    <input id="sensitivitySlider" type="range" min="0" max="100" value="50">
+
+    <div class="setting">
+      <div class="settingHead">
+        <label for="gain">入力レベル</label><output id="gainValue">300%</output>
+      </div>
+      <input id="gain" type="range" min="0" max="100" step="1" value="50">
+      <div class="rangeEnds"><span>0%</span><span>300%</span><span>600%</span></div>
+      <div class="rangeScale"><span>最小</span><span>標準</span><span>最大</span></div>
+    </div>
+
+    <div class="setting">
+      <div class="settingHead">
+        <label for="sensitivity">感度</label><output id="sensitivityValue">150%</output>
+      </div>
+      <input id="sensitivity" type="range" min="0" max="100" step="1" value="50">
+      <div class="rangeEnds"><span>0%</span><span>150%</span><span>300%</span></div>
+      <div class="rangeScale"><span>最小</span><span>標準</span><span>最大</span></div>
+    </div>
   </div>
 </div>
 
-<div id="status">MICROPHONE NOT CONNECTED</div>
-
 <script>
-const canvas = document.getElementById("visualizer");
+(() => {
+"use strict";
+
+const $ = id => document.getElementById(id);
+const app = $("app");
+const canvas = $("canvas");
 const ctx = canvas.getContext("2d");
+const settings = $("settings");
+const micBtn = $("micBtn");
 
-let width = 0;
-let height = 0;
-let dpr = 1;
+let audioContext=null,source=null,gainNode=null,analyser=null;
+let stream=null,frequencyData=null;
+let width=0,height=0,dpr=1;
+let smoothData=[],peakData=[];
+let particles=[];
+let isRunning=false;
+let gainValue=3,sensitivity=1.5;
+const smoothing=.72;
+let hideTimer=null;
+let globalGlow=0,lowEnergy=0,previousLow=0;
+let flash=0,animationTime=0;
+let currentEffect="spectrum";
 
-function resize() {
-  dpr = Math.min(window.devicePixelRatio || 1, 2);
-  width = window.innerWidth;
-  height = window.innerHeight;
+const BAR_COUNT=100;
+const MIN_HZ=35;
+const MAX_HZ=12000;
 
-  canvas.width = width * dpr;
-  canvas.height = height * dpr;
-  canvas.style.width = width + "px";
-  canvas.style.height = height + "px";
+const descriptions={
+  spectrum:"立体バー、強い発光、ピークの残像を組み合わせた表示",
+  mirror:"上下に広がる波と低音に反応する光",
+  wave:"複数の光の帯が重なりながら流れる表示",
+  radial:"多重リングと回転する円形スペクトラム",
+  particles:"音に合わせて粒子が放射状に広がる表示"
+};
 
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+$("effectSelect").addEventListener("change",e=>{
+  currentEffect=e.target.value;
+  $("effectDescription").textContent=descriptions[currentEffect];
+  smoothData.fill(0);
+  peakData.fill(0);
+  particles=[];
+});
+
+function updateGainFromSlider(){
+  gainValue=Number($("gain").value)/50*3;
+  $("gainValue").textContent=Math.round(gainValue*100)+"%";
+  if(gainNode&&audioContext){
+    gainNode.gain.setTargetAtTime(gainValue,audioContext.currentTime,.04);
+  }
 }
+function updateSensitivityFromSlider(){
+  sensitivity=Number($("sensitivity").value)/50*1.5;
+  $("sensitivityValue").textContent=Math.round(sensitivity*100)+"%";
+}
+$("gain").addEventListener("input",updateGainFromSlider);
+$("sensitivity").addEventListener("input",updateSensitivityFromSlider);
+updateGainFromSlider();
+updateSensitivityFromSlider();
 
-window.addEventListener("resize", resize);
-resize();
+function resizeCanvas(){
+  const rect=canvas.getBoundingClientRect();
+  width=rect.width;height=rect.height;
+  dpr=Math.min(window.devicePixelRatio||1,2);
+  canvas.width=Math.max(1,Math.round(width*dpr));
+  canvas.height=Math.max(1,Math.round(height*dpr));
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  smoothData=new Array(BAR_COUNT).fill(0);
+  peakData=new Array(BAR_COUNT).fill(0);
+}
+if("ResizeObserver" in window){
+  new ResizeObserver(resizeCanvas).observe($("visualArea"));
+}else{
+  window.addEventListener("resize",resizeCanvas);
+}
+resizeCanvas();
 
-/* 音声入力 */
-let audioContext = null;
-let analyser = null;
-let microphone = null;
-let gainNode = null;
-let stream = null;
-let frequencyData = null;
-let isRunning = false;
-
-let inputGain = 3;
-let sensitivity = 1.5;
-
-const statusText = document.getElementById("status");
-
-async function startMicrophone() {
-  try {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      throw new Error("この環境ではマイクを利用できません");
+async function startMicrophone(){
+  try{
+    micBtn.textContent="接続中...";
+    if(!navigator.mediaDevices?.getUserMedia){
+      throw new Error("この環境ではマイクを利用できません。HTTPS接続を確認してください。");
     }
-
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      stream = null;
+    if(stream){
+      stream.getTracks().forEach(track=>track.stop());
+      stream=null;
     }
-
-    if (audioContext) {
-      await audioContext.close();
+    if(audioContext){
+      try{await audioContext.close()}catch(e){}
     }
-
-    stream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        echoCancellation: false,
-        noiseSuppression: false,
-        autoGainControl: false
+    isRunning=false;
+    stream=await navigator.mediaDevices.getUserMedia({
+      audio:{
+        echoCancellation:false,
+        noiseSuppression:false,
+        autoGainControl:false
       }
     });
+    const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+    audioContext=new AudioContextClass();
+    if(audioContext.state==="suspended") await audioContext.resume();
 
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    source=audioContext.createMediaStreamSource(stream);
+    gainNode=audioContext.createGain();
+    gainNode.gain.value=gainValue;
 
-    if (audioContext.state === "suspended") {
-      await audioContext.resume();
-    }
+    analyser=audioContext.createAnalyser();
+    analyser.fftSize=4096;
+    analyser.minDecibels=-100;
+    analyser.maxDecibels=-20;
+    analyser.smoothingTimeConstant=0;
 
-    microphone = audioContext.createMediaStreamSource(stream);
-    gainNode = audioContext.createGain();
-    analyser = audioContext.createAnalyser();
-
-    analyser.fftSize = 4096;
-    analyser.smoothingTimeConstant = 0.72;
-
-    frequencyData = new Uint8Array(analyser.frequencyBinCount);
-
-    gainNode.gain.value = inputGain;
-
-    microphone.connect(gainNode);
+    source.connect(gainNode);
     gainNode.connect(analyser);
+    frequencyData=new Uint8Array(analyser.frequencyBinCount);
 
-    isRunning = true;
-    statusText.textContent = "MICROPHONE CONNECTED";
-    document.getElementById("micButton").textContent = "●";
+    smoothData=new Array(BAR_COUNT).fill(0);
+    peakData=new Array(BAR_COUNT).fill(0);
+    particles=[];
+    globalGlow=0;
+    isRunning=true;
 
-  } catch (error) {
+    $("statusText").textContent="CONNECTED";
+    $("centerMessage").classList.add("hidden");
+    micBtn.textContent="マイク接続済み";
+  }catch(error){
     console.error(error);
-    statusText.textContent = "MICROPHONE CONNECTION FAILED";
-    isRunning = false;
+    $("statusText").textContent="ERROR";
+    micBtn.textContent="マイク開始";
+    alert("マイクを取得できませんでした。\n\n"+error.message);
   }
 }
+micBtn.addEventListener("click",startMicrophone);
 
-document.getElementById("micButton").addEventListener("click", startMicrophone);
-
-/* 設定 */
-const gainSlider = document.getElementById("gainSlider");
-const sensitivitySlider = document.getElementById("sensitivitySlider");
-
-gainSlider.addEventListener("input", () => {
-  inputGain = Number(gainSlider.value) / 50 * 3;
-
-  document.getElementById("gainValue").textContent =
-    Math.round(inputGain * 100) + "%";
-
-  if (gainNode) {
-    gainNode.gain.setTargetAtTime(
-      inputGain,
-      audioContext.currentTime,
-      0.03
-    );
-  }
-});
-
-sensitivitySlider.addEventListener("input", () => {
-  sensitivity = Number(sensitivitySlider.value) / 50 * 1.5;
-
-  document.getElementById("sensitivityValue").textContent =
-    Math.round(sensitivity * 100) + "%";
-});
-
-document.getElementById("settingsButton").addEventListener("click", () => {
-  document.getElementById("settings").classList.toggle("open");
-});
-
-/* 全画面 */
-const body = document.body;
-const fullscreenButton = document.getElementById("fullscreenButton");
-
-fullscreenButton.addEventListener("click", async () => {
-  if (!document.fullscreenElement) {
-    try {
-      await document.documentElement.requestFullscreen();
-    } catch (e) {}
-    body.classList.add("fullscreen");
-    showControls();
-  } else {
-    await document.exitFullscreen();
-    body.classList.remove("fullscreen");
-  }
-});
-
-document.addEventListener("fullscreenchange", () => {
-  body.classList.toggle("fullscreen", !!document.fullscreenElement);
-});
-
-let controlsTimer;
-
-function showControls() {
-  body.classList.add("controls-visible");
-  clearTimeout(controlsTimer);
-
-  controlsTimer = setTimeout(() => {
-    if (document.fullscreenElement &&
-        !document.getElementById("settings").classList.contains("open")) {
-      body.classList.remove("controls-visible");
-    }
-  }, 3500);
+function getBarValue(index){
+  if(!analyser||!audioContext||!frequencyData)return 0;
+  const t1=index/BAR_COUNT;
+  const t2=(index+1)/BAR_COUNT;
+  const startHz=MIN_HZ*Math.pow(MAX_HZ/MIN_HZ,t1);
+  const endHz=MIN_HZ*Math.pow(MAX_HZ/MIN_HZ,t2);
+  const binWidth=audioContext.sampleRate/analyser.fftSize;
+  const start=Math.max(0,Math.floor(startHz/binWidth));
+  const end=Math.min(frequencyData.length-1,Math.max(start,Math.ceil(endHz/binWidth)));
+  let sum=0,count=0;
+  for(let i=start;i<=end;i++){sum+=frequencyData[i];count++}
+  return count?sum/count:0;
 }
 
-canvas.addEventListener("pointerdown", () => {
-  if (document.fullscreenElement) showControls();
-});
-
-/* 周波数解析 */
-const BAR_COUNT = 100;
-const bars = new Array(BAR_COUNT).fill(0);
-const peaks = new Array(BAR_COUNT).fill(0);
-
-let globalGlow = 0;
-let lowEnergy = 0;
-let previousLow = 0;
-
-/* ゆっくり消える光 */
-let flash = 0;
-let animationTime = 0;
-
-function getFrequencyValue(freq) {
-  if (!analyser || !frequencyData || !audioContext) return 0;
-
-  const nyquist = audioContext.sampleRate / 2;
-  const index = Math.floor(freq / nyquist * frequencyData.length);
-
-  return frequencyData[
-    Math.max(0, Math.min(index, frequencyData.length - 1))
-  ] / 255;
+function getLowFrequency(){
+  if(!analyser||!audioContext||!frequencyData)return 0;
+  const binWidth=audioContext.sampleRate/analyser.fftSize;
+  const start=Math.floor(35/binWidth);
+  const end=Math.ceil(250/binWidth);
+  let sum=0,count=0;
+  for(let i=start;i<=end;i++){sum+=frequencyData[i]||0;count++}
+  return count?sum/count/255:0;
 }
 
-function getBandEnergy(startFreq, endFreq) {
-  if (!analyser || !frequencyData || !audioContext) return 0;
+function getHue(i){
+  const d=Math.abs((i/(BAR_COUNT-1))*2-1);
+  return 220+(1-d)*48;
+}
 
-  const nyquist = audioContext.sampleRate / 2;
+/* 背景と低音連動グロー */
+function roundedGlow(x,y,r,color){
+  const g=ctx.createRadialGradient(x,y,0,x,y,r);
+  g.addColorStop(0,color);
+  g.addColorStop(1,"rgba(50,70,180,0)");
+  ctx.fillStyle=g;
+  ctx.fillRect(x-r,y-r,r*2,r*2);
+}
 
-  const start = Math.max(
-    0,
-    Math.floor(startFreq / nyquist * frequencyData.length)
+function drawBackground(){
+  const bg=ctx.createRadialGradient(
+    width*.5,height*.48,0,width*.5,height*.48,Math.max(width,height)*.8
   );
+  bg.addColorStop(0,"#141d42");
+  bg.addColorStop(.48,"#090f25");
+  bg.addColorStop(1,"#03050e");
+  ctx.fillStyle=bg;
+  ctx.fillRect(0,0,width,height);
 
-  const end = Math.min(
-    frequencyData.length - 1,
-    Math.ceil(endFreq / nyquist * frequencyData.length)
+  const g=ctx.createRadialGradient(
+    width*.5,height*.52,0,width*.5,height*.52,width*.76
   );
+  g.addColorStop(0,`rgba(75,110,255,${.09+globalGlow*.3})`);
+  g.addColorStop(.5,`rgba(70,90,230,${.04+globalGlow*.16})`);
+  g.addColorStop(1,"rgba(30,50,130,0)");
+  ctx.fillStyle=g;
+  ctx.fillRect(0,0,width,height);
 
-  let total = 0;
-  let count = 0;
-
-  for (let i = start; i <= end; i++) {
-    total += frequencyData[i] / 255;
-    count++;
-  }
-
-  return count ? total / count : 0;
+  roundedGlow(width*.5,height*.55,width*.45,
+    `rgba(95,130,255,${.025+globalGlow*.12})`);
 }
 
-function getLowFrequency() {
-  return getBandEnergy(35, 150) * sensitivity;
-}
+/* Spectrum X */
+function drawSpectrum(){
+  const cx=width/2;
+  const spread=width*.92;
+  const baseY=height*.69;
+  const maxH=Math.min(height*.5,Math.min(width,height)*.72);
+  const bw=Math.max(2,spread/BAR_COUNT*.7);
 
-function getBarValue(index) {
-  const minFreq = 35;
-  const maxFreq = 12000;
+  for(let i=0;i<BAR_COUNT;i++){
+    const n=i/(BAR_COUNT-1);
+    const distance=Math.abs(n*2-1);
+    const curve=1-Math.pow(distance,1.6)*.18;
+    const x=cx+(n-.5)*spread;
+    const y=baseY+Math.pow(distance,2)*height*.035;
+    const level=smoothData[i];
+    const h=level*maxH*curve;
+    const peak=peakData[i]*maxH*curve;
+    const hue=getHue(i);
 
-  const ratio = index / (BAR_COUNT - 1);
-  const freq = minFreq * Math.pow(maxFreq / minFreq, ratio);
-
-  const value = getFrequencyValue(freq);
-
-  return Math.min(1, Math.pow(value * sensitivity, 0.85));
-}
-
-function updateAudio() {
-  if (isRunning && analyser && frequencyData) {
-    analyser.getByteFrequencyData(frequencyData);
-
-    lowEnergy = getLowFrequency();
-
-    const targetGlow = Math.min(1, lowEnergy * 2.8);
-
-    globalGlow += (targetGlow - globalGlow) * 0.075;
-
-    /* 低音の立ち上がりで光を少しずつ重ねる */
-    const rising = lowEnergy - previousLow;
-
-    if (rising > 0.035) {
-      flash = Math.min(1, flash + rising * 2.2);
+    if(h>1){
+      ctx.fillStyle=`hsla(${hue},100%,65%,.12)`;
+      ctx.fillRect(x-bw*.9,y-h*.88,bw*1.8,h*.88);
     }
 
-    previousLow = lowEnergy;
+    if(h>.5){
+      const grad=ctx.createLinearGradient(x,y-h,x,y);
+      grad.addColorStop(0,`hsla(${hue+20},100%,94%,1)`);
+      grad.addColorStop(.22,`hsla(${hue+5},100%,78%,.98)`);
+      grad.addColorStop(.7,`hsla(${hue},95%,58%,.92)`);
+      grad.addColorStop(1,`hsla(${hue-10},90%,35%,.8)`);
 
-    for (let i = 0; i < BAR_COUNT; i++) {
-      const value = getBarValue(i);
-      bars[i] += (value - bars[i]) * 0.35;
+      ctx.save();
+      ctx.shadowColor=`hsla(${hue},100%,70%,.95)`;
+      ctx.shadowBlur=14+level*35;
+      ctx.fillStyle=grad;
+      ctx.fillRect(x-bw/2,y-h,bw,h);
+      ctx.restore();
 
-      if (bars[i] > peaks[i]) {
-        peaks[i] = bars[i];
-      } else {
-        peaks[i] *= 0.985;
-      }
+      ctx.save();
+      ctx.shadowColor="#b8d2ff";
+      ctx.shadowBlur=14;
+      ctx.fillStyle="rgba(220,235,255,.95)";
+      ctx.fillRect(x-bw/2,y-h-1,bw,2);
+      ctx.restore();
     }
 
-  } else {
-    globalGlow *= 0.985;
-    lowEnergy *= 0.97;
-    previousLow *= 0.97;
-
-    for (let i = 0; i < BAR_COUNT; i++) {
-      bars[i] *= 0.94;
-      peaks[i] *= 0.99;
-    }
-  }
-}
-
-/* 背景 */
-function drawBackground() {
-  const bg = ctx.createRadialGradient(
-    width * 0.5,
-    height * 0.48,
-    0,
-    width * 0.5,
-    height * 0.48,
-    Math.max(width, height) * 0.85
-  );
-
-  bg.addColorStop(0, "#141d42");
-  bg.addColorStop(0.48, "#090f25");
-  bg.addColorStop(1, "#03050e");
-
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, width, height);
-
-  /* 中央の青い光 */
-  const glow = ctx.createRadialGradient(
-    width * 0.5,
-    height * 0.55,
-    0,
-    width * 0.5,
-    height * 0.55,
-    Math.max(width, height) * 0.7
-  );
-
-  glow.addColorStop(
-    0,
-    `rgba(75,110,255,${0.035 + globalGlow * 0.24})`
-  );
-
-  glow.addColorStop(
-    0.5,
-    `rgba(70,90,230,${0.025 + globalGlow * 0.12})`
-  );
-
-  glow.addColorStop(1, "rgba(30,50,130,0)");
-
-  ctx.fillStyle = glow;
-  ctx.fillRect(0, 0, width, height);
-
-  /* 下部に広がる淡い光 */
-  const lowerGlow = ctx.createRadialGradient(
-    width * 0.5,
-    height * 0.78,
-    0,
-    width * 0.5,
-    height * 0.78,
-    width * 0.65
-  );
-
-  lowerGlow.addColorStop(
-    0,
-    `rgba(95,130,255,${0.015 + globalGlow * 0.1})`
-  );
-
-  lowerGlow.addColorStop(1, "rgba(50,70,180,0)");
-
-  ctx.fillStyle = lowerGlow;
-  ctx.fillRect(0, 0, width, height);
-}
-
-/* ジワーっと消える光 */
-function drawFlash() {
-  if (flash <= 0.001) return;
-
-  const radius = Math.max(width, height) * 0.8;
-
-  const gradient = ctx.createRadialGradient(
-    width * 0.5,
-    height * 0.53,
-    0,
-    width * 0.5,
-    height * 0.53,
-    radius
-  );
-
-  gradient.addColorStop(
-    0,
-    `rgba(105,135,255,${flash * 0.095})`
-  );
-
-  gradient.addColorStop(
-    0.35,
-    `rgba(105,95,255,${flash * 0.065})`
-  );
-
-  gradient.addColorStop(
-    0.72,
-    `rgba(65,100,230,${flash * 0.025})`
-  );
-
-  gradient.addColorStop(1, "rgba(45,65,180,0)");
-
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, width, height);
-
-  /* 急に消えないようにゆっくり減衰 */
-  flash *= 0.982;
-
-  if (flash < 0.001) flash = 0;
-}
-
-/* 共通グロー */
-function glowLine(color, blur, widthValue) {
-  ctx.shadowColor = color;
-  ctx.shadowBlur = blur;
-  ctx.lineWidth = widthValue;
-  ctx.strokeStyle = color;
-}
-
-function roundedGlow(x, y, radius, color) {
-  const g = ctx.createRadialGradient(x, y, 0, x, y, radius);
-  g.addColorStop(0, color);
-  g.addColorStop(1, "rgba(20,40,120,0)");
-
-  ctx.fillStyle = g;
-  ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
-}
-
-/* 1. Spectrum X */
-function drawSpectrum() {
-  const centerY = height * 0.56;
-  const usableWidth = width * 0.9;
-  const startX = (width - usableWidth) / 2;
-  const gap = Math.max(1.5, usableWidth / BAR_COUNT * 0.22);
-  const barWidth = usableWidth / BAR_COUNT - gap;
-
-  for (let i = 0; i < BAR_COUNT; i++) {
-    const x = startX + i * (barWidth + gap);
-    const value = bars[i];
-    const barHeight = value * height * 0.42;
-
-    const hue = 215 + i / BAR_COUNT * 65;
-
-    const gradient = ctx.createLinearGradient(
-      0,
-      centerY - barHeight,
-      0,
-      centerY
-    );
-
-    gradient.addColorStop(0, `hsla(${hue},100%,85%,0.95)`);
-    gradient.addColorStop(0.4, `hsla(${hue},100%,67%,0.9)`);
-    gradient.addColorStop(1, `hsla(${hue},95%,48%,0.3)`);
-
-    ctx.fillStyle = gradient;
-    ctx.shadowColor = `hsla(${hue},100%,65%,0.8)`;
-    ctx.shadowBlur = 10 + value * 16;
-
-    ctx.fillRect(
-      x,
-      centerY - barHeight,
-      barWidth,
-      barHeight
-    );
-
-    /* 反射 */
-    const reflection = ctx.createLinearGradient(
-      0,
-      centerY,
-      0,
-      centerY + barHeight * 0.42
-    );
-
-    reflection.addColorStop(0, `hsla(${hue},100%,70%,0.2)`);
-    reflection.addColorStop(1, "rgba(50,70,180,0)");
-
-    ctx.fillStyle = reflection;
-    ctx.fillRect(
-      x,
-      centerY,
-      barWidth,
-      barHeight * 0.42
-    );
-
-    /* ピーク */
-    const peakY = centerY - peaks[i] * height * 0.42;
-
-    ctx.shadowBlur = 8;
-    ctx.fillStyle = `hsla(${hue},100%,85%,0.8)`;
-
-    ctx.fillRect(x, peakY, barWidth, 2);
-  }
-
-  ctx.shadowBlur = 0;
-
-  const line = ctx.createLinearGradient(
-    startX,
-    0,
-    startX + usableWidth,
-    0
-  );
-
-  line.addColorStop(0, "rgba(90,120,255,0)");
-  line.addColorStop(0.5, "rgba(130,160,255,0.6)");
-  line.addColorStop(1, "rgba(90,120,255,0)");
-
-  ctx.fillStyle = line;
-  ctx.fillRect(startX, centerY, usableWidth, 1);
-}
-
-/* 2. Mirror Pulse */
-function drawMirror() {
-  const centerY = height * 0.5;
-  const usableWidth = width * 0.88;
-  const startX = (width - usableWidth) / 2;
-  const gap = 2;
-  const barWidth = usableWidth / BAR_COUNT - gap;
-
-  for (let i = 0; i < BAR_COUNT; i++) {
-    const x = startX + i * (barWidth + gap);
-    const value = bars[i];
-    const h = value * height * 0.34;
-    const hue = 210 + i / BAR_COUNT * 70;
-
-    const gradient = ctx.createLinearGradient(
-      0,
-      centerY - h,
-      0,
-      centerY + h
-    );
-
-    gradient.addColorStop(0, `hsla(${hue},100%,75%,0.2)`);
-    gradient.addColorStop(0.5, `hsla(${hue},100%,75%,0.95)`);
-    gradient.addColorStop(1, `hsla(${hue},100%,75%,0.2)`);
-
-    ctx.fillStyle = gradient;
-    ctx.shadowColor = `hsla(${hue},100%,65%,0.8)`;
-    ctx.shadowBlur = 12 + value * 14;
-
-    ctx.fillRect(x, centerY - h, barWidth, h * 2);
-  }
-
-  ctx.shadowBlur = 0;
-
-  ctx.fillStyle = "rgba(150,180,255,0.5)";
-  ctx.fillRect(0, centerY - 1, width, 2);
-}
-
-/* 3. Wave Flow */
-function drawWave() {
-  const colors = [
-    "rgba(80,140,255,0.8)",
-    "rgba(120,100,255,0.7)",
-    "rgba(60,210,255,0.65)",
-    "rgba(170,110,255,0.55)",
-    "rgba(70,130,255,0.5)"
-  ];
-
-  const baseY = height * 0.5;
-  const amplitude = height * 0.19;
-
-  for (let layer = 0; layer < 5; layer++) {
-    ctx.beginPath();
-
-    const phase = animationTime * (0.0008 + layer * 0.00012);
-    const offset = layer * 0.5;
-
-    for (let x = 0; x <= width; x += 4) {
-      const index = Math.floor(x / width * (BAR_COUNT - 1));
-      const value = bars[index] || 0;
-
-      const wave =
-        Math.sin(x * 0.008 + phase + offset) * 0.5 +
-        Math.sin(x * 0.014 - phase * 0.7 + offset) * 0.25;
-
-      const y =
-        baseY +
-        wave * amplitude +
-        (value * amplitude * 0.7) * Math.sin(x * 0.018 + phase);
-
-      if (x === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+    if(peak>3){
+      ctx.fillStyle=`hsla(${hue+20},100%,90%,.85)`;
+      ctx.fillRect(x-bw/2,y-peak-3,bw,2);
     }
 
-    ctx.strokeStyle = colors[layer];
-    ctx.lineWidth = 2 + layer * 0.4;
-    ctx.shadowColor = colors[layer];
-    ctx.shadowBlur = 14 + globalGlow * 14;
-    ctx.stroke();
-
-    ctx.shadowBlur = 0;
+    if(level>.04){
+      const ref=ctx.createLinearGradient(x,y,x,y+height*.15);
+      ref.addColorStop(0,`hsla(${hue},100%,70%,${level*.25})`);
+      ref.addColorStop(1,"rgba(70,100,255,0)");
+      ctx.fillStyle=ref;
+      ctx.fillRect(x-bw/2,y+2,bw,height*.15);
+    }
   }
 
-  /* 流れる光 */
-  const sweepX = (animationTime * 0.08) % (width + 200) - 100;
-
-  const sweep = ctx.createRadialGradient(
-    sweepX,
-    baseY,
-    0,
-    sweepX,
-    baseY,
-    130
-  );
-
-  sweep.addColorStop(0, "rgba(160,190,255,0.18)");
-  sweep.addColorStop(1, "rgba(100,130,255,0)");
-
-  ctx.fillStyle = sweep;
-  ctx.fillRect(0, 0, width, height);
+  const line=ctx.createLinearGradient(0,0,width,0);
+  line.addColorStop(0,"rgba(100,130,255,0)");
+  line.addColorStop(.5,"rgba(180,205,255,.65)");
+  line.addColorStop(1,"rgba(100,130,255,0)");
+  ctx.save();
+  ctx.shadowColor="#809fff";
+  ctx.shadowBlur=18;
+  ctx.strokeStyle=line;
+  ctx.lineWidth=1.5;
+  ctx.beginPath();
+  ctx.moveTo(0,baseY);
+  ctx.quadraticCurveTo(cx,baseY-25,width,baseY);
+  ctx.stroke();
+  ctx.restore();
 }
 
-/* 4. Hyper Radial */
-function drawRadial() {
-  const cx = width * 0.5;
-  const cy = height * 0.5;
-  const baseRadius = Math.min(width, height) * 0.2;
+/* Mirror Pulse */
+function drawMirror(){
+  const cx=width/2,cy=height*.51;
+  const spread=width*.92;
+  const maxH=Math.min(height*.34,width*.42);
+  const bw=Math.max(2,spread/BAR_COUNT*.7);
+
+  for(let i=0;i<BAR_COUNT;i++){
+    const x=cx-spread/2+i/BAR_COUNT*spread;
+    const level=smoothData[i];
+    const h=level*maxH;
+    const hue=getHue(i);
+
+    const grad=ctx.createLinearGradient(x,cy-h,x,cy+h);
+    grad.addColorStop(0,`hsla(${hue+25},100%,90%,.98)`);
+    grad.addColorStop(.35,`hsla(${hue},100%,70%,.95)`);
+    grad.addColorStop(1,`hsla(${hue-15},90%,45%,.9)`);
+
+    ctx.save();
+    ctx.shadowColor=`hsla(${hue},100%,70%,.9)`;
+    ctx.shadowBlur=12+level*30;
+    ctx.fillStyle=grad;
+    ctx.fillRect(x,cy-h,bw,h);
+    ctx.fillRect(x,cy,bw,h);
+    ctx.restore();
+
+    const peak=peakData[i]*maxH;
+    ctx.fillStyle=`hsla(${hue+20},100%,90%,.8)`;
+    ctx.fillRect(x,cy-peak-2,bw,2);
+    ctx.fillRect(x,cy+peak,bw,2);
+  }
 
   ctx.save();
-  ctx.translate(cx, cy);
-  ctx.rotate(animationTime * 0.00012);
-
-  /* このエフェクト固有のリング */
-  for (let ring = 0; ring < 5; ring++) {
-    const radius = baseRadius + ring * 27;
-    const rotation = animationTime * (0.0001 + ring * 0.00003);
-
-    ctx.beginPath();
-
-    for (let i = 0; i < 100; i++) {
-      const angle = i / 100 * Math.PI * 2 + rotation;
-      const value = bars[i] || 0;
-      const r = radius + value * 18;
-
-      const x = Math.cos(angle) * r;
-      const y = Math.sin(angle) * r;
-
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    }
-
-    ctx.closePath();
-
-    ctx.strokeStyle = `rgba(${100 + ring * 15},${130 + ring * 10},255,${0.25 + ring * 0.06})`;
-    ctx.lineWidth = 1.2;
-    ctx.shadowColor = "#708eff";
-    ctx.shadowBlur = 10;
-    ctx.stroke();
-  }
-
-  /* 放射状バー */
-  for (let i = 0; i < BAR_COUNT; i++) {
-    const angle = i / BAR_COUNT * Math.PI * 2;
-    const value = bars[i];
-    const inner = baseRadius * 0.65;
-    const outer = inner + value * baseRadius * 1.5;
-
-    const x1 = Math.cos(angle) * inner;
-    const y1 = Math.sin(angle) * inner;
-    const x2 = Math.cos(angle) * outer;
-    const y2 = Math.sin(angle) * outer;
-
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-
-    ctx.strokeStyle = `hsla(${215 + i / BAR_COUNT * 70},100%,75%,0.8)`;
-    ctx.lineWidth = 2;
-    ctx.shadowColor = "#829cff";
-    ctx.shadowBlur = 9;
-    ctx.stroke();
-  }
-
+  ctx.shadowColor="#91b2ff";
+  ctx.shadowBlur=22;
+  ctx.strokeStyle="rgba(170,195,255,.8)";
+  ctx.lineWidth=1.5;
+  ctx.beginPath();
+  ctx.moveTo(0,cy);
+  ctx.lineTo(width,cy);
+  ctx.stroke();
   ctx.restore();
-  ctx.shadowBlur = 0;
-
-  const core = ctx.createRadialGradient(
-    cx, cy, 0,
-    cx, cy, baseRadius * 0.9
-  );
-
-  core.addColorStop(0, `rgba(130,160,255,${0.12 + globalGlow * 0.22})`);
-  core.addColorStop(0.5, "rgba(80,100,220,0.08)");
-  core.addColorStop(1, "rgba(40,60,160,0)");
-
-  ctx.fillStyle = core;
-  ctx.fillRect(
-    cx - baseRadius,
-    cy - baseRadius,
-    baseRadius * 2,
-    baseRadius * 2
-  );
 }
 
-/* 5. Particle Storm */
-const particles = [];
+/* Wave Flow */
+function drawWave(){
+  const cx=width/2,cy=height*.53;
+  const spread=width*.95;
+  const amp=Math.min(height*.32,width*.4);
 
-for (let i = 0; i < 170; i++) {
-  particles.push({
-    angle: Math.random() * Math.PI * 2,
-    radius: Math.random() * 0.6,
-    speed: 0.2 + Math.random() * 0.8,
-    size: 0.5 + Math.random() * 2,
-    alpha: 0.2 + Math.random() * 0.6
-  });
-}
-
-function drawParticles() {
-  const cx = width * 0.5;
-  const cy = height * 0.5;
-  const maxRadius = Math.max(width, height) * 0.65;
-
-  for (const p of particles) {
-    const index = Math.floor(
-      ((p.angle % (Math.PI * 2)) / (Math.PI * 2)) * BAR_COUNT
-    );
-
-    const value = bars[(index + BAR_COUNT) % BAR_COUNT] || 0;
-
-    p.radius += p.speed * (0.0015 + value * 0.008);
-
-    if (p.radius > 1) {
-      p.radius = 0.03;
-      p.angle = Math.random() * Math.PI * 2;
-    }
-
-    const r = p.radius * maxRadius;
-    const x = cx + Math.cos(p.angle) * r;
-    const y = cy + Math.sin(p.angle) * r;
-
-    const size = p.size + value * 3;
+  for(let layer=0;layer<5;layer++){
+    const scale=1-layer*.15;
+    const phase=animationTime*(.012+layer*.002)+layer*1.3;
+    const offset=(layer-2)*height*.025;
 
     ctx.beginPath();
-    ctx.arc(x, y, size, 0, Math.PI * 2);
+    for(let i=0;i<BAR_COUNT;i++){
+      const x=cx-spread/2+i/(BAR_COUNT-1)*spread;
+      const audio=smoothData[i];
+      const y=cy+offset-
+        audio*amp*scale+
+        Math.sin(i*.085+phase)*9+
+        Math.sin(i*.035-phase*.7)*6;
 
-    ctx.fillStyle = `rgba(130,165,255,${p.alpha * (0.4 + value)})`;
-    ctx.shadowColor = "#779aff";
-    ctx.shadowBlur = 8 + value * 12;
+      if(i===0)ctx.moveTo(x,y);
+      else{
+        const px=cx-spread/2+(i-1)/(BAR_COUNT-1)*spread;
+        const prev=cy+offset-
+          smoothData[i-1]*amp*scale+
+          Math.sin((i-1)*.085+phase)*9+
+          Math.sin((i-1)*.035-phase*.7)*6;
+        ctx.quadraticCurveTo(px,prev,(px+x)/2,(prev+y)/2);
+      }
+    }
+    const hue=225+layer*9;
+    ctx.strokeStyle=`hsla(${hue},100%,${75-layer*4}%,${.8-layer*.12})`;
+    ctx.lineWidth=3-layer*.35;
+    ctx.shadowColor=`hsla(${hue},100%,70%,.9)`;
+    ctx.shadowBlur=18+layer*3;
+    ctx.stroke();
+
+    ctx.lineTo(cx+spread/2,cy+height*.2);
+    ctx.lineTo(cx-spread/2,cy+height*.2);
+    ctx.closePath();
+    const fill=ctx.createLinearGradient(0,cy-amp,0,cy+height*.2);
+    fill.addColorStop(0,`rgba(100,140,255,${.08-layer*.01})`);
+    fill.addColorStop(1,"rgba(40,70,180,0)");
+    ctx.fillStyle=fill;
     ctx.fill();
   }
 
-  ctx.shadowBlur = 0;
+  const sweep=(animationTime*2.4)%(width+200)-100;
+  const sweepGrad=ctx.createLinearGradient(sweep-70,0,sweep+70,0);
+  sweepGrad.addColorStop(0,"rgba(100,140,255,0)");
+  sweepGrad.addColorStop(.5,"rgba(170,205,255,.18)");
+  sweepGrad.addColorStop(1,"rgba(100,140,255,0)");
+  ctx.fillStyle=sweepGrad;
+  ctx.fillRect(0,0,width,height);
+}
 
-  const core = ctx.createRadialGradient(
-    cx, cy, 0,
-    cx, cy, Math.min(width, height) * 0.3
+/* Hyper Radial */
+function drawRadial(){
+  const cx=width/2,cy=height/2;
+  const unit=Math.min(width,height);
+  const base=unit*.19;
+  const maxLen=unit*.24;
+
+  ctx.save();
+
+  for(let r=0;r<4;r++){
+    const radius=base*(1.35+r*.23);
+    ctx.beginPath();
+    ctx.arc(cx,cy,radius,
+      animationTime*.002*(r%2?1:-1),
+      animationTime*.002*(r%2?1:-1)+Math.PI*2
+    );
+    ctx.strokeStyle=`rgba(110,150,255,${.16-r*.025})`;
+    ctx.lineWidth=1;
+    ctx.setLineDash(r%2?[3,8]:[8,12]);
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+
+  for(let i=0;i<BAR_COUNT;i++){
+    const angle=i/BAR_COUNT*Math.PI*2-Math.PI/2;
+    const level=smoothData[i];
+    const len=level*maxLen;
+    const hue=getHue(i);
+    const r1=base;
+    const r2=base+len;
+
+    const x1=cx+Math.cos(angle)*r1;
+    const y1=cy+Math.sin(angle)*r1;
+    const x2=cx+Math.cos(angle)*r2;
+    const y2=cy+Math.sin(angle)*r2;
+
+    ctx.beginPath();
+    ctx.moveTo(x1,y1);
+    ctx.lineTo(x2,y2);
+    ctx.strokeStyle=`hsla(${hue},100%,${70+level*20}%,${.5+level*.5})`;
+    ctx.lineWidth=2+level*3;
+    ctx.lineCap="round";
+    ctx.shadowColor=`hsla(${hue},100%,70%,.95)`;
+    ctx.shadowBlur=10+level*28;
+    ctx.stroke();
+
+    if(level>.18){
+      ctx.beginPath();
+      ctx.arc(x2,y2,1.5+level*3,0,Math.PI*2);
+      ctx.fillStyle="#dceaff";
+      ctx.fill();
+    }
+
+    const inner=base*.75+level*base*.35;
+    ctx.beginPath();
+    ctx.arc(cx,cy,inner,angle,angle+.025);
+    ctx.strokeStyle=`hsla(${hue},100%,80%,.5)`;
+    ctx.lineWidth=2;
+    ctx.stroke();
+  }
+
+  const coreRadius=base*.78+lowEnergy*base*.4;
+  const core=ctx.createRadialGradient(cx,cy,0,cx,cy,coreRadius);
+  core.addColorStop(0,`rgba(190,210,255,${.12+lowEnergy*.3})`);
+  core.addColorStop(.35,"rgba(100,140,255,.2)");
+  core.addColorStop(1,"rgba(65,90,210,0)");
+  ctx.fillStyle=core;
+  ctx.beginPath();
+  ctx.arc(cx,cy,coreRadius,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+/* Particle Storm */
+function spawnParticles(){
+  const cx=width/2,cy=height*.53;
+  const average=smoothData.reduce((a,b)=>a+b,0)/BAR_COUNT;
+  if(!isRunning)return;
+
+  const amount=Math.floor(1+average*12+lowEnergy*8);
+  for(let n=0;n<amount;n++){
+    const index=Math.floor(Math.random()*BAR_COUNT);
+    const angle=Math.random()*Math.PI*2;
+    const speed=.7+Math.random()*1.6+smoothData[index]*4;
+    particles.push({
+      x:cx+Math.cos(angle)*10,
+      y:cy+Math.sin(angle)*10,
+      vx:Math.cos(angle)*speed,
+      vy:Math.sin(angle)*speed,
+      life:1,
+      size:1+Math.random()*3,
+      hue:getHue(index),
+      trail:[]
+    });
+  }
+}
+
+function drawParticles(){
+  const cx=width/2,cy=height*.53;
+  const average=smoothData.reduce((a,b)=>a+b,0)/BAR_COUNT;
+
+  if(average>.025&&Math.random()<.9)spawnParticles();
+
+  ctx.save();
+  ctx.globalCompositeOperation="lighter";
+
+  const coreR=18+average*Math.min(width,height)*.28+lowEnergy*25;
+  const core=ctx.createRadialGradient(cx,cy,0,cx,cy,coreR);
+  core.addColorStop(0,`rgba(210,225,255,${.14+average*.5})`);
+  core.addColorStop(.3,`rgba(110,150,255,${.15+average*.35})`);
+  core.addColorStop(1,"rgba(60,90,255,0)");
+  ctx.fillStyle=core;
+  ctx.fillRect(0,0,width,height);
+
+  particles.forEach(p=>{
+    p.trail.unshift({x:p.x,y:p.y});
+    if(p.trail.length>5)p.trail.pop();
+
+    p.x+=p.vx;
+    p.y+=p.vy;
+    p.vx*=1.003;
+    p.vy*=1.003;
+    p.life-=.006;
+
+    for(let i=0;i<p.trail.length;i++){
+      const t=p.trail[i];
+      ctx.beginPath();
+      ctx.arc(t.x,t.y,p.size*(1-i/p.trail.length)*p.life,0,Math.PI*2);
+      ctx.fillStyle=`hsla(${p.hue},100%,80%,${p.life*(1-i/p.trail.length)*.55})`;
+      ctx.shadowColor=`hsla(${p.hue},100%,70%,.9)`;
+      ctx.shadowBlur=15;
+      ctx.fill();
+    }
+  });
+
+  particles=particles.filter(p=>
+    p.life>0&&p.x>-100&&p.x<width+100&&p.y>-100&&p.y<height+100
   );
+  if(particles.length>450)particles.splice(0,particles.length-450);
 
-  core.addColorStop(0, `rgba(100,130,255,${0.08 + globalGlow * 0.2})`);
-  core.addColorStop(1, "rgba(50,70,180,0)");
+  ctx.restore();
+}
 
-  ctx.fillStyle = core;
-  ctx.fillRect(0, 0, width, height);
+/* 低音連動フラッシュ */
+function drawFlash(){
+  if(flash<=.005)return;
+  ctx.fillStyle=`rgba(130,160,255,${flash*.075})`;
+  ctx.fillRect(0,0,width,height);
+  flash*=.86;
+}
+
+/* データ更新 */
+function updateSpectrumData(){
+  for(let i=0;i<BAR_COUNT;i++){
+    let value=0;
+    if(isRunning&&analyser&&frequencyData){
+      value=getBarValue(i)/255*sensitivity;
+      value=Math.min(1,value);
+    }
+    smoothData[i]=smoothData[i]*smoothing+value*(1-smoothing);
+    peakData[i]=Math.max(smoothData[i],peakData[i]-.0025);
+  }
 }
 
 /* 描画ループ */
-let currentEffect = "spectrum";
-
-document.getElementById("effectSelect").addEventListener("change", e => {
-  currentEffect = e.target.value;
-});
-
-function draw() {
+function draw(){
   requestAnimationFrame(draw);
+  if(!width||!height)return;
 
-  animationTime += 16.67;
+  animationTime++;
 
-  updateAudio();
+  if(isRunning&&analyser&&frequencyData){
+    analyser.getByteFrequencyData(frequencyData);
+    lowEnergy=getLowFrequency();
+
+    globalGlow+=(Math.min(1,lowEnergy*2.8)-globalGlow)*.13;
+
+    /* 低音の立ち上がりで画面全体を軽く発光 */
+    const rising=lowEnergy-previousLow;
+    if(rising>.035){
+      flash=Math.min(1,flash+.65);
+    }
+    previousLow=lowEnergy;
+  }else{
+    globalGlow*=.96;
+    lowEnergy*=.94;
+    previousLow*=.94;
+  }
+
+  updateSpectrumData();
   drawBackground();
 
-  switch (currentEffect) {
-    case "spectrum":
-      drawSpectrum();
-      break;
-
-    case "mirror":
-      drawMirror();
-      break;
-
-    case "wave":
-      drawWave();
-      break;
-
-    case "radial":
-      drawRadial();
-      break;
-
-    case "particles":
-      drawParticles();
-      break;
+  switch(currentEffect){
+    case "spectrum": drawSpectrum(); break;
+    case "mirror": drawMirror(); break;
+    case "wave": drawWave(); break;
+    case "radial": drawRadial(); break;
+    case "particles": drawParticles(); break;
   }
 
   drawFlash();
 }
-
 draw();
-</script>
 
+/* 設定 */
+$("settingsBtn").addEventListener("click",e=>{
+  e.stopPropagation();
+  settings.classList.toggle("open");
+  if(settings.classList.contains("open"))showControls();
+  else scheduleHide();
+});
+
+/* 全画面 */
+$("fullscreenBtn").addEventListener("click",e=>{
+  e.stopPropagation();
+  app.classList.toggle("fullscreen");
+  if(app.classList.contains("fullscreen")){
+    settings.classList.remove("open");
+    showControls();
+  }else{
+    clearTimeout(hideTimer);
+    app.classList.remove("controlsHidden");
+  }
+});
+
+function showControls(){
+  app.classList.remove("controlsHidden");
+  clearTimeout(hideTimer);
+  if(app.classList.contains("fullscreen")&&!settings.classList.contains("open")){
+    scheduleHide();
+  }
+}
+function scheduleHide(){
+  clearTimeout(hideTimer);
+  if(app.classList.contains("fullscreen")&&!settings.classList.contains("open")){
+    hideTimer=setTimeout(()=>app.classList.add("controlsHidden"),3500);
+  }
+}
+
+app.addEventListener("pointerdown",e=>{
+  if(!app.classList.contains("fullscreen"))return;
+  if(settings.contains(e.target)){showControls();return}
+  if(e.target.closest(".toolbar")){showControls();return}
+  if(app.classList.contains("controlsHidden"))showControls();
+  else scheduleHide();
+});
+
+document.addEventListener("visibilitychange",async()=>{
+  if(!document.hidden&&audioContext&&audioContext.state==="suspended"){
+    try{await audioContext.resume()}catch(e){}
+  }
+});
+
+window.addEventListener("orientationchange",()=>setTimeout(resizeCanvas,200));
+
+})();
+</script>
 </body>
 </html>
