@@ -90,16 +90,6 @@ input[type=range]{width:100%;accent-color:#929fff;height:5px;cursor:pointer}
 }
 .rangeEnds{color:#687397}
 .rangeScale{color:#8792b5;margin-top:5px}
-select{
-  width:100%;padding:12px;color:#e9edff;
-  background:rgba(35,43,76,.85);
-  border:1px solid rgba(150,170,255,.2);
-  border-radius:10px;outline:none;font-size:12px;
-}
-select option{background:#151b31;color:#e9edff}
-.settingDescription{
-  margin-top:9px;font-size:10px;line-height:1.6;color:#7885aa;
-}
 #app.fullscreen .header,#app.fullscreen .status{opacity:0}
 #app.fullscreen.controlsHidden .toolbar{
   opacity:0;pointer-events:none;transform:translateY(-8px);
@@ -154,22 +144,9 @@ select option{background:#151b31;color:#e9edff}
     <h2>VISUALIZER SETTINGS</h2>
 
     <div class="setting">
-      <div class="settingHead"><label for="effectSelect">演出モード</label></div>
-      <select id="effectSelect">
-        <option value="spectrum">Spectrum X</option>
-        <option value="mirror">Mirror Pulse</option>
-        <option value="wave">Wave Flow</option>
-        <option value="radial">Hyper Radial</option>
-        <option value="particles">Particle Storm</option>
-      </select>
-      <div class="settingDescription" id="effectDescription">
-        立体バーと残光を組み合わせたスペクトラム
-      </div>
-    </div>
-
-    <div class="setting">
       <div class="settingHead">
-        <label for="gain">入力レベル</label><output id="gainValue">300%</output>
+        <label for="gain">入力レベル</label>
+        <output id="gainValue">300%</output>
       </div>
       <input id="gain" type="range" min="0" max="100" step="1" value="50">
       <div class="rangeEnds"><span>0%</span><span>300%</span><span>600%</span></div>
@@ -178,7 +155,8 @@ select option{background:#151b31;color:#e9edff}
 
     <div class="setting">
       <div class="settingHead">
-        <label for="sensitivity">感度</label><output id="sensitivityValue">150%</output>
+        <label for="sensitivity">感度</label>
+        <output id="sensitivityValue">150%</output>
       </div>
       <input id="sensitivity" type="range" min="0" max="100" step="1" value="50">
       <div class="rangeEnds"><span>0%</span><span>150%</span><span>300%</span></div>
@@ -202,34 +180,20 @@ let audioContext=null,source=null,gainNode=null,analyser=null;
 let stream=null,frequencyData=null;
 let width=0,height=0,dpr=1;
 let smoothData=[],peakData=[];
-let particles=[];
 let isRunning=false;
 let gainValue=3,sensitivity=1.5;
 const smoothing=.72;
 let hideTimer=null;
-let globalGlow=0,lowEnergy=0,previousLow=0;
-let flash=0,animationTime=0;
-let currentEffect="spectrum";
+
+let globalGlow=0;
+let lowEnergy=0;
+let previousLow=0;
+let flash=0;
+let animationTime=0;
 
 const BAR_COUNT=100;
 const MIN_HZ=35;
 const MAX_HZ=12000;
-
-const descriptions={
-  spectrum:"立体バー、強い発光、ピークの残像を組み合わせた表示",
-  mirror:"上下に広がる波と低音に反応する光",
-  wave:"複数の光の帯が重なりながら流れる表示",
-  radial:"多重リングと回転する円形スペクトラム",
-  particles:"音に合わせて粒子が放射状に広がる表示"
-};
-
-$("effectSelect").addEventListener("change",e=>{
-  currentEffect=e.target.value;
-  $("effectDescription").textContent=descriptions[currentEffect];
-  smoothData.fill(0);
-  peakData.fill(0);
-  particles=[];
-});
 
 function updateGainFromSlider(){
   gainValue=Number($("gain").value)/50*3;
@@ -238,10 +202,12 @@ function updateGainFromSlider(){
     gainNode.gain.setTargetAtTime(gainValue,audioContext.currentTime,.04);
   }
 }
+
 function updateSensitivityFromSlider(){
   sensitivity=Number($("sensitivity").value)/50*1.5;
   $("sensitivityValue").textContent=Math.round(sensitivity*100)+"%";
 }
+
 $("gain").addEventListener("input",updateGainFromSlider);
 $("sensitivity").addEventListener("input",updateSensitivityFromSlider);
 updateGainFromSlider();
@@ -249,7 +215,8 @@ updateSensitivityFromSlider();
 
 function resizeCanvas(){
   const rect=canvas.getBoundingClientRect();
-  width=rect.width;height=rect.height;
+  width=rect.width;
+  height=rect.height;
   dpr=Math.min(window.devicePixelRatio||1,2);
   canvas.width=Math.max(1,Math.round(width*dpr));
   canvas.height=Math.max(1,Math.round(height*dpr));
@@ -257,6 +224,7 @@ function resizeCanvas(){
   smoothData=new Array(BAR_COUNT).fill(0);
   peakData=new Array(BAR_COUNT).fill(0);
 }
+
 if("ResizeObserver" in window){
   new ResizeObserver(resizeCanvas).observe($("visualArea"));
 }else{
@@ -267,17 +235,22 @@ resizeCanvas();
 async function startMicrophone(){
   try{
     micBtn.textContent="接続中...";
+
     if(!navigator.mediaDevices?.getUserMedia){
       throw new Error("この環境ではマイクを利用できません。HTTPS接続を確認してください。");
     }
+
     if(stream){
       stream.getTracks().forEach(track=>track.stop());
       stream=null;
     }
+
     if(audioContext){
       try{await audioContext.close()}catch(e){}
     }
+
     isRunning=false;
+
     stream=await navigator.mediaDevices.getUserMedia({
       audio:{
         echoCancellation:false,
@@ -285,9 +258,13 @@ async function startMicrophone(){
         autoGainControl:false
       }
     });
+
     const AudioContextClass=window.AudioContext||window.webkitAudioContext;
     audioContext=new AudioContextClass();
-    if(audioContext.state==="suspended") await audioContext.resume();
+
+    if(audioContext.state==="suspended"){
+      await audioContext.resume();
+    }
 
     source=audioContext.createMediaStreamSource(stream);
     gainNode=audioContext.createGain();
@@ -301,17 +278,23 @@ async function startMicrophone(){
 
     source.connect(gainNode);
     gainNode.connect(analyser);
+
     frequencyData=new Uint8Array(analyser.frequencyBinCount);
 
     smoothData=new Array(BAR_COUNT).fill(0);
     peakData=new Array(BAR_COUNT).fill(0);
-    particles=[];
+
     globalGlow=0;
+    lowEnergy=0;
+    previousLow=0;
+    flash=0;
+
     isRunning=true;
 
     $("statusText").textContent="CONNECTED";
     $("centerMessage").classList.add("hidden");
     micBtn.textContent="マイク接続済み";
+
   }catch(error){
     console.error(error);
     $("statusText").textContent="ERROR";
@@ -319,29 +302,49 @@ async function startMicrophone(){
     alert("マイクを取得できませんでした。\n\n"+error.message);
   }
 }
+
 micBtn.addEventListener("click",startMicrophone);
 
 function getBarValue(index){
   if(!analyser||!audioContext||!frequencyData)return 0;
+
   const t1=index/BAR_COUNT;
   const t2=(index+1)/BAR_COUNT;
+
   const startHz=MIN_HZ*Math.pow(MAX_HZ/MIN_HZ,t1);
   const endHz=MIN_HZ*Math.pow(MAX_HZ/MIN_HZ,t2);
+
   const binWidth=audioContext.sampleRate/analyser.fftSize;
   const start=Math.max(0,Math.floor(startHz/binWidth));
-  const end=Math.min(frequencyData.length-1,Math.max(start,Math.ceil(endHz/binWidth)));
+  const end=Math.min(
+    frequencyData.length-1,
+    Math.max(start,Math.ceil(endHz/binWidth))
+  );
+
   let sum=0,count=0;
-  for(let i=start;i<=end;i++){sum+=frequencyData[i];count++}
+
+  for(let i=start;i<=end;i++){
+    sum+=frequencyData[i];
+    count++;
+  }
+
   return count?sum/count:0;
 }
 
 function getLowFrequency(){
   if(!analyser||!audioContext||!frequencyData)return 0;
+
   const binWidth=audioContext.sampleRate/analyser.fftSize;
   const start=Math.floor(35/binWidth);
   const end=Math.ceil(250/binWidth);
+
   let sum=0,count=0;
-  for(let i=start;i<=end;i++){sum+=frequencyData[i]||0;count++}
+
+  for(let i=start;i<=end;i++){
+    sum+=frequencyData[i]||0;
+    count++;
+  }
+
   return count?sum/count/255:0;
 }
 
@@ -361,25 +364,35 @@ function roundedGlow(x,y,r,color){
 
 function drawBackground(){
   const bg=ctx.createRadialGradient(
-    width*.5,height*.48,0,width*.5,height*.48,Math.max(width,height)*.8
+    width*.5,height*.48,0,
+    width*.5,height*.48,Math.max(width,height)*.8
   );
+
   bg.addColorStop(0,"#141d42");
   bg.addColorStop(.48,"#090f25");
   bg.addColorStop(1,"#03050e");
+
   ctx.fillStyle=bg;
   ctx.fillRect(0,0,width,height);
 
   const g=ctx.createRadialGradient(
-    width*.5,height*.52,0,width*.5,height*.52,width*.76
+    width*.5,height*.52,0,
+    width*.5,height*.52,width*.76
   );
+
   g.addColorStop(0,`rgba(75,110,255,${.09+globalGlow*.3})`);
   g.addColorStop(.5,`rgba(70,90,230,${.04+globalGlow*.16})`);
   g.addColorStop(1,"rgba(30,50,130,0)");
+
   ctx.fillStyle=g;
   ctx.fillRect(0,0,width,height);
 
-  roundedGlow(width*.5,height*.55,width*.45,
-    `rgba(95,130,255,${.025+globalGlow*.12})`);
+  roundedGlow(
+    width*.5,
+    height*.55,
+    width*.45,
+    `rgba(95,130,255,${.025+globalGlow*.12})`
+  );
 }
 
 /* Spectrum X */
@@ -394,8 +407,10 @@ function drawSpectrum(){
     const n=i/(BAR_COUNT-1);
     const distance=Math.abs(n*2-1);
     const curve=1-Math.pow(distance,1.6)*.18;
+
     const x=cx+(n-.5)*spread;
     const y=baseY+Math.pow(distance,2)*height*.035;
+
     const level=smoothData[i];
     const h=level*maxH*curve;
     const peak=peakData[i]*maxH*curve;
@@ -408,6 +423,7 @@ function drawSpectrum(){
 
     if(h>.5){
       const grad=ctx.createLinearGradient(x,y-h,x,y);
+
       grad.addColorStop(0,`hsla(${hue+20},100%,94%,1)`);
       grad.addColorStop(.22,`hsla(${hue+5},100%,78%,.98)`);
       grad.addColorStop(.7,`hsla(${hue},95%,58%,.92)`);
@@ -437,6 +453,7 @@ function drawSpectrum(){
       const ref=ctx.createLinearGradient(x,y,x,y+height*.15);
       ref.addColorStop(0,`hsla(${hue},100%,70%,${level*.25})`);
       ref.addColorStop(1,"rgba(70,100,255,0)");
+
       ctx.fillStyle=ref;
       ctx.fillRect(x-bw/2,y+2,bw,height*.15);
     }
@@ -446,6 +463,7 @@ function drawSpectrum(){
   line.addColorStop(0,"rgba(100,130,255,0)");
   line.addColorStop(.5,"rgba(180,205,255,.65)");
   line.addColorStop(1,"rgba(100,130,255,0)");
+
   ctx.save();
   ctx.shadowColor="#809fff";
   ctx.shadowBlur=18;
@@ -458,255 +476,13 @@ function drawSpectrum(){
   ctx.restore();
 }
 
-/* Mirror Pulse */
-function drawMirror(){
-  const cx=width/2,cy=height*.51;
-  const spread=width*.92;
-  const maxH=Math.min(height*.34,width*.42);
-  const bw=Math.max(2,spread/BAR_COUNT*.7);
-
-  for(let i=0;i<BAR_COUNT;i++){
-    const x=cx-spread/2+i/BAR_COUNT*spread;
-    const level=smoothData[i];
-    const h=level*maxH;
-    const hue=getHue(i);
-
-    const grad=ctx.createLinearGradient(x,cy-h,x,cy+h);
-    grad.addColorStop(0,`hsla(${hue+25},100%,90%,.98)`);
-    grad.addColorStop(.35,`hsla(${hue},100%,70%,.95)`);
-    grad.addColorStop(1,`hsla(${hue-15},90%,45%,.9)`);
-
-    ctx.save();
-    ctx.shadowColor=`hsla(${hue},100%,70%,.9)`;
-    ctx.shadowBlur=12+level*30;
-    ctx.fillStyle=grad;
-    ctx.fillRect(x,cy-h,bw,h);
-    ctx.fillRect(x,cy,bw,h);
-    ctx.restore();
-
-    const peak=peakData[i]*maxH;
-    ctx.fillStyle=`hsla(${hue+20},100%,90%,.8)`;
-    ctx.fillRect(x,cy-peak-2,bw,2);
-    ctx.fillRect(x,cy+peak,bw,2);
-  }
-
-  ctx.save();
-  ctx.shadowColor="#91b2ff";
-  ctx.shadowBlur=22;
-  ctx.strokeStyle="rgba(170,195,255,.8)";
-  ctx.lineWidth=1.5;
-  ctx.beginPath();
-  ctx.moveTo(0,cy);
-  ctx.lineTo(width,cy);
-  ctx.stroke();
-  ctx.restore();
-}
-
-/* Wave Flow */
-function drawWave(){
-  const cx=width/2,cy=height*.53;
-  const spread=width*.95;
-  const amp=Math.min(height*.32,width*.4);
-
-  for(let layer=0;layer<5;layer++){
-    const scale=1-layer*.15;
-    const phase=animationTime*(.012+layer*.002)+layer*1.3;
-    const offset=(layer-2)*height*.025;
-
-    ctx.beginPath();
-    for(let i=0;i<BAR_COUNT;i++){
-      const x=cx-spread/2+i/(BAR_COUNT-1)*spread;
-      const audio=smoothData[i];
-      const y=cy+offset-
-        audio*amp*scale+
-        Math.sin(i*.085+phase)*9+
-        Math.sin(i*.035-phase*.7)*6;
-
-      if(i===0)ctx.moveTo(x,y);
-      else{
-        const px=cx-spread/2+(i-1)/(BAR_COUNT-1)*spread;
-        const prev=cy+offset-
-          smoothData[i-1]*amp*scale+
-          Math.sin((i-1)*.085+phase)*9+
-          Math.sin((i-1)*.035-phase*.7)*6;
-        ctx.quadraticCurveTo(px,prev,(px+x)/2,(prev+y)/2);
-      }
-    }
-    const hue=225+layer*9;
-    ctx.strokeStyle=`hsla(${hue},100%,${75-layer*4}%,${.8-layer*.12})`;
-    ctx.lineWidth=3-layer*.35;
-    ctx.shadowColor=`hsla(${hue},100%,70%,.9)`;
-    ctx.shadowBlur=18+layer*3;
-    ctx.stroke();
-
-    ctx.lineTo(cx+spread/2,cy+height*.2);
-    ctx.lineTo(cx-spread/2,cy+height*.2);
-    ctx.closePath();
-    const fill=ctx.createLinearGradient(0,cy-amp,0,cy+height*.2);
-    fill.addColorStop(0,`rgba(100,140,255,${.08-layer*.01})`);
-    fill.addColorStop(1,"rgba(40,70,180,0)");
-    ctx.fillStyle=fill;
-    ctx.fill();
-  }
-
-  const sweep=(animationTime*2.4)%(width+200)-100;
-  const sweepGrad=ctx.createLinearGradient(sweep-70,0,sweep+70,0);
-  sweepGrad.addColorStop(0,"rgba(100,140,255,0)");
-  sweepGrad.addColorStop(.5,"rgba(170,205,255,.18)");
-  sweepGrad.addColorStop(1,"rgba(100,140,255,0)");
-  ctx.fillStyle=sweepGrad;
-  ctx.fillRect(0,0,width,height);
-}
-
-/* Hyper Radial */
-function drawRadial(){
-  const cx=width/2,cy=height/2;
-  const unit=Math.min(width,height);
-  const base=unit*.19;
-  const maxLen=unit*.24;
-
-  ctx.save();
-
-  for(let r=0;r<4;r++){
-    const radius=base*(1.35+r*.23);
-    ctx.beginPath();
-    ctx.arc(cx,cy,radius,
-      animationTime*.002*(r%2?1:-1),
-      animationTime*.002*(r%2?1:-1)+Math.PI*2
-    );
-    ctx.strokeStyle=`rgba(110,150,255,${.16-r*.025})`;
-    ctx.lineWidth=1;
-    ctx.setLineDash(r%2?[3,8]:[8,12]);
-    ctx.stroke();
-  }
-  ctx.setLineDash([]);
-
-  for(let i=0;i<BAR_COUNT;i++){
-    const angle=i/BAR_COUNT*Math.PI*2-Math.PI/2;
-    const level=smoothData[i];
-    const len=level*maxLen;
-    const hue=getHue(i);
-    const r1=base;
-    const r2=base+len;
-
-    const x1=cx+Math.cos(angle)*r1;
-    const y1=cy+Math.sin(angle)*r1;
-    const x2=cx+Math.cos(angle)*r2;
-    const y2=cy+Math.sin(angle)*r2;
-
-    ctx.beginPath();
-    ctx.moveTo(x1,y1);
-    ctx.lineTo(x2,y2);
-    ctx.strokeStyle=`hsla(${hue},100%,${70+level*20}%,${.5+level*.5})`;
-    ctx.lineWidth=2+level*3;
-    ctx.lineCap="round";
-    ctx.shadowColor=`hsla(${hue},100%,70%,.95)`;
-    ctx.shadowBlur=10+level*28;
-    ctx.stroke();
-
-    if(level>.18){
-      ctx.beginPath();
-      ctx.arc(x2,y2,1.5+level*3,0,Math.PI*2);
-      ctx.fillStyle="#dceaff";
-      ctx.fill();
-    }
-
-    const inner=base*.75+level*base*.35;
-    ctx.beginPath();
-    ctx.arc(cx,cy,inner,angle,angle+.025);
-    ctx.strokeStyle=`hsla(${hue},100%,80%,.5)`;
-    ctx.lineWidth=2;
-    ctx.stroke();
-  }
-
-  const coreRadius=base*.78+lowEnergy*base*.4;
-  const core=ctx.createRadialGradient(cx,cy,0,cx,cy,coreRadius);
-  core.addColorStop(0,`rgba(190,210,255,${.12+lowEnergy*.3})`);
-  core.addColorStop(.35,"rgba(100,140,255,.2)");
-  core.addColorStop(1,"rgba(65,90,210,0)");
-  ctx.fillStyle=core;
-  ctx.beginPath();
-  ctx.arc(cx,cy,coreRadius,0,Math.PI*2);
-  ctx.fill();
-
-  ctx.restore();
-}
-
-/* Particle Storm */
-function spawnParticles(){
-  const cx=width/2,cy=height*.53;
-  const average=smoothData.reduce((a,b)=>a+b,0)/BAR_COUNT;
-  if(!isRunning)return;
-
-  const amount=Math.floor(1+average*12+lowEnergy*8);
-  for(let n=0;n<amount;n++){
-    const index=Math.floor(Math.random()*BAR_COUNT);
-    const angle=Math.random()*Math.PI*2;
-    const speed=.7+Math.random()*1.6+smoothData[index]*4;
-    particles.push({
-      x:cx+Math.cos(angle)*10,
-      y:cy+Math.sin(angle)*10,
-      vx:Math.cos(angle)*speed,
-      vy:Math.sin(angle)*speed,
-      life:1,
-      size:1+Math.random()*3,
-      hue:getHue(index),
-      trail:[]
-    });
-  }
-}
-
-function drawParticles(){
-  const cx=width/2,cy=height*.53;
-  const average=smoothData.reduce((a,b)=>a+b,0)/BAR_COUNT;
-
-  if(average>.025&&Math.random()<.9)spawnParticles();
-
-  ctx.save();
-  ctx.globalCompositeOperation="lighter";
-
-  const coreR=18+average*Math.min(width,height)*.28+lowEnergy*25;
-  const core=ctx.createRadialGradient(cx,cy,0,cx,cy,coreR);
-  core.addColorStop(0,`rgba(210,225,255,${.14+average*.5})`);
-  core.addColorStop(.3,`rgba(110,150,255,${.15+average*.35})`);
-  core.addColorStop(1,"rgba(60,90,255,0)");
-  ctx.fillStyle=core;
-  ctx.fillRect(0,0,width,height);
-
-  particles.forEach(p=>{
-    p.trail.unshift({x:p.x,y:p.y});
-    if(p.trail.length>5)p.trail.pop();
-
-    p.x+=p.vx;
-    p.y+=p.vy;
-    p.vx*=1.003;
-    p.vy*=1.003;
-    p.life-=.006;
-
-    for(let i=0;i<p.trail.length;i++){
-      const t=p.trail[i];
-      ctx.beginPath();
-      ctx.arc(t.x,t.y,p.size*(1-i/p.trail.length)*p.life,0,Math.PI*2);
-      ctx.fillStyle=`hsla(${p.hue},100%,80%,${p.life*(1-i/p.trail.length)*.55})`;
-      ctx.shadowColor=`hsla(${p.hue},100%,70%,.9)`;
-      ctx.shadowBlur=15;
-      ctx.fill();
-    }
-  });
-
-  particles=particles.filter(p=>
-    p.life>0&&p.x>-100&&p.x<width+100&&p.y>-100&&p.y<height+100
-  );
-  if(particles.length>450)particles.splice(0,particles.length-450);
-
-  ctx.restore();
-}
-
 /* 低音連動フラッシュ */
 function drawFlash(){
   if(flash<=.005)return;
+
   ctx.fillStyle=`rgba(130,160,255,${flash*.075})`;
   ctx.fillRect(0,0,width,height);
+
   flash*=.86;
 }
 
@@ -714,10 +490,12 @@ function drawFlash(){
 function updateSpectrumData(){
   for(let i=0;i<BAR_COUNT;i++){
     let value=0;
+
     if(isRunning&&analyser&&frequencyData){
       value=getBarValue(i)/255*sensitivity;
       value=Math.min(1,value);
     }
+
     smoothData[i]=smoothData[i]*smoothing+value*(1-smoothing);
     peakData[i]=Math.max(smoothData[i],peakData[i]-.0025);
   }
@@ -726,22 +504,27 @@ function updateSpectrumData(){
 /* 描画ループ */
 function draw(){
   requestAnimationFrame(draw);
+
   if(!width||!height)return;
 
   animationTime++;
 
   if(isRunning&&analyser&&frequencyData){
     analyser.getByteFrequencyData(frequencyData);
+
     lowEnergy=getLowFrequency();
 
     globalGlow+=(Math.min(1,lowEnergy*2.8)-globalGlow)*.13;
 
     /* 低音の立ち上がりで画面全体を軽く発光 */
     const rising=lowEnergy-previousLow;
+
     if(rising>.035){
       flash=Math.min(1,flash+.65);
     }
+
     previousLow=lowEnergy;
+
   }else{
     globalGlow*=.96;
     lowEnergy*=.94;
@@ -750,31 +533,31 @@ function draw(){
 
   updateSpectrumData();
   drawBackground();
-
-  switch(currentEffect){
-    case "spectrum": drawSpectrum(); break;
-    case "mirror": drawMirror(); break;
-    case "wave": drawWave(); break;
-    case "radial": drawRadial(); break;
-    case "particles": drawParticles(); break;
-  }
-
+  drawSpectrum();
   drawFlash();
 }
+
 draw();
 
 /* 設定 */
 $("settingsBtn").addEventListener("click",e=>{
   e.stopPropagation();
+
   settings.classList.toggle("open");
-  if(settings.classList.contains("open"))showControls();
-  else scheduleHide();
+
+  if(settings.classList.contains("open")){
+    showControls();
+  }else{
+    scheduleHide();
+  }
 });
 
 /* 全画面 */
 $("fullscreenBtn").addEventListener("click",e=>{
   e.stopPropagation();
+
   app.classList.toggle("fullscreen");
+
   if(app.classList.contains("fullscreen")){
     settings.classList.remove("open");
     showControls();
@@ -787,32 +570,53 @@ $("fullscreenBtn").addEventListener("click",e=>{
 function showControls(){
   app.classList.remove("controlsHidden");
   clearTimeout(hideTimer);
+
   if(app.classList.contains("fullscreen")&&!settings.classList.contains("open")){
     scheduleHide();
   }
 }
+
 function scheduleHide(){
   clearTimeout(hideTimer);
+
   if(app.classList.contains("fullscreen")&&!settings.classList.contains("open")){
-    hideTimer=setTimeout(()=>app.classList.add("controlsHidden"),3500);
+    hideTimer=setTimeout(()=>{
+      app.classList.add("controlsHidden");
+    },3500);
   }
 }
 
 app.addEventListener("pointerdown",e=>{
   if(!app.classList.contains("fullscreen"))return;
-  if(settings.contains(e.target)){showControls();return}
-  if(e.target.closest(".toolbar")){showControls();return}
-  if(app.classList.contains("controlsHidden"))showControls();
-  else scheduleHide();
+
+  if(settings.contains(e.target)){
+    showControls();
+    return;
+  }
+
+  if(e.target.closest(".toolbar")){
+    showControls();
+    return;
+  }
+
+  if(app.classList.contains("controlsHidden")){
+    showControls();
+  }else{
+    scheduleHide();
+  }
 });
 
 document.addEventListener("visibilitychange",async()=>{
   if(!document.hidden&&audioContext&&audioContext.state==="suspended"){
-    try{await audioContext.resume()}catch(e){}
+    try{
+      await audioContext.resume();
+    }catch(e){}
   }
 });
 
-window.addEventListener("orientationchange",()=>setTimeout(resizeCanvas,200));
+window.addEventListener("orientationchange",()=>{
+  setTimeout(resizeCanvas,200);
+});
 
 })();
 </script>
