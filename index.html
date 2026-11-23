@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Audio Visualizer</title>
+<title>3D Audio Visualizer</title>
 
 <style>
 * {
@@ -15,8 +15,8 @@
 html, body {
   margin: 0;
   min-height: 100%;
-  background: #080c16;
-  color: #edf2ff;
+  background: #080b14;
+  color: #edf3ff;
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
@@ -28,83 +28,81 @@ body {
 
 .container {
   width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
+  max-width: 950px;
+  margin: auto;
 }
 
 header {
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 header h1 {
-  font-size: 22px;
-  margin: 0 0 5px;
+  font-size: 23px;
   letter-spacing: 1px;
+  margin: 0 0 5px;
 }
 
 header p {
-  color: #7f8ba8;
   font-size: 12px;
+  color: #8290ad;
   margin: 0;
 }
 
 .visual-card {
   position: relative;
   overflow: hidden;
-  border-radius: 20px;
-  background: #080c16;
-  border: 1px solid #202b43;
-  box-shadow: 0 10px 40px #0006;
-  margin-bottom: 16px;
+  border-radius: 18px;
+  background: #080c18;
+  border: 1px solid #26344e;
+  box-shadow: 0 12px 40px #0007;
+  margin-bottom: 15px;
 }
 
 .visual-area {
   position: relative;
-  width: 100%;
-  height: 340px;
+  height: 370px;
   min-height: 240px;
+  background: #080c18;
   overflow: hidden;
-  background:
-    radial-gradient(ellipse at 50% 100%, #14264b 0%, #0a1020 48%, #080c16 100%);
 }
 
 canvas {
+  display: block;
   width: 100%;
   height: 100%;
-  display: block;
 }
 
 .view-button {
   position: absolute;
-  top: 14px;
-  right: 14px;
+  top: 13px;
+  right: 13px;
   z-index: 10;
-  border: 1px solid #ffffff25;
-  background: #101a30cc;
-  color: white;
-  border-radius: 10px;
   padding: 10px 14px;
-  font-size: 13px;
-  backdrop-filter: blur(10px);
+  color: white;
+  background: #17243bdc;
+  border: 1px solid #52658b;
+  border-radius: 10px;
+  font-size: 12px;
+  backdrop-filter: blur(12px);
 }
 
 .status {
-  padding: 12px 16px;
-  color: #a5b4d3;
+  padding: 12px 15px;
+  border-top: 1px solid #ffffff12;
+  color: #9aabc9;
   font-size: 12px;
-  border-top: 1px solid #ffffff10;
 }
 
-.status-dot {
+.dot {
   display: inline-block;
   width: 7px;
   height: 7px;
+  margin-right: 7px;
   border-radius: 50%;
   background: #64748b;
-  margin-right: 7px;
 }
 
-.status-dot.active {
+.dot.active {
   background: #36e6ae;
   box-shadow: 0 0 10px #36e6ae;
 }
@@ -112,74 +110,75 @@ canvas {
 .controls {
   display: flex;
   gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
+  margin-bottom: 15px;
 }
 
 button {
   cursor: pointer;
+  font-family: inherit;
+}
+
+.main-button,
+.secondary-button {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 8px;
+  border-radius: 11px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .main-button {
-  flex: 1;
-  min-width: 130px;
-  padding: 14px;
-  border: 0;
-  border-radius: 12px;
   color: white;
-  font-size: 14px;
-  font-weight: 600;
-  background: linear-gradient(135deg, #3568ed, #7548d9);
+  border: none;
+  background: linear-gradient(120deg, #356cf0, #8050dc);
 }
 
 .secondary-button {
-  flex: 1;
-  min-width: 130px;
-  padding: 14px;
-  border: 1px solid #34415d;
-  border-radius: 12px;
-  color: #dce7ff;
-  font-size: 14px;
-  background: #172238;
+  color: #dce8ff;
+  border: 1px solid #394966;
+  background: #172239;
 }
 
-.menu-panel {
-  display: block;
+button:disabled {
+  opacity: .5;
 }
 
 .card {
-  background: #111a2c;
-  border: 1px solid #24324c;
-  border-radius: 16px;
   padding: 18px;
   margin-bottom: 14px;
+  border: 1px solid #263550;
+  border-radius: 15px;
+  background: #111a2b;
 }
 
 .card h2 {
-  font-size: 15px;
+  font-size: 14px;
   margin: 0 0 18px;
 }
 
 .setting {
-  margin-bottom: 20px;
+  margin-bottom: 21px;
 }
 
 .setting:last-child {
   margin-bottom: 0;
 }
 
-.setting-head {
+.setting-head,
+.meter-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 13px;
+  gap: 10px;
   margin-bottom: 10px;
-  color: #c9d5ee;
+  font-size: 12px;
+  color: #c6d3ed;
 }
 
 .setting-value {
-  color: #7ea9ff;
-  font-variant-numeric: tabular-nums;
+  color: #85aaff;
+  font-weight: bold;
 }
 
 input[type="range"] {
@@ -188,32 +187,21 @@ input[type="range"] {
   height: 6px;
 }
 
-.meter-row {
-  margin: 14px 0;
-}
-
-.meter-head {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: #b9c6df;
-  margin-bottom: 7px;
-}
-
 .meter-bg {
+  width: 100%;
   height: 9px;
-  border-radius: 20px;
-  background: #26334c;
   overflow: hidden;
+  border-radius: 20px;
+  background: #27344b;
 }
 
 .meter-fill {
-  height: 100%;
   width: 0%;
+  height: 100%;
   border-radius: 20px;
   transition: width .06s linear;
-  background: linear-gradient(90deg, #3977ff, #36e6c0);
-  box-shadow: 0 0 10px #398bff80;
+  background: linear-gradient(90deg, #3977ff, #40e1c1);
+  box-shadow: 0 0 12px #398bff80;
 }
 
 .frequency-grid {
@@ -230,12 +218,8 @@ input[type="range"] {
   height: 7px;
 }
 
-.frequency-item .meter-fill {
-  background: linear-gradient(90deg, #4779ff, #b17aff);
-}
-
 .frequency-item:nth-child(2) .meter-fill {
-  background: linear-gradient(90deg, #29c6d8, #5b8cff);
+  background: linear-gradient(90deg, #28c8d9, #6c9dff);
 }
 
 .frequency-item:nth-child(3) .meter-fill {
@@ -244,24 +228,22 @@ input[type="range"] {
 
 .frequency-item small {
   display: block;
-  font-size: 11px;
-  color: #8796b5;
   margin-top: 6px;
+  font-size: 10px;
+  color: #8495b5;
 }
 
-/* Fullscreen */
+/* FULLSCREEN */
 
 body.fullscreen-mode {
   padding: 0;
   overflow: hidden;
-  background: #080c16;
 }
 
 .fullscreen-mode .container {
-  width: 100%;
   max-width: none;
+  width: 100%;
   height: 100dvh;
-  margin: 0;
 }
 
 .fullscreen-mode header {
@@ -272,11 +254,9 @@ body.fullscreen-mode {
   position: fixed;
   inset: 0;
   z-index: 100;
-  margin: 0;
-  padding: 0;
   border: none;
   border-radius: 0;
-  background: #080c16;
+  margin: 0;
 }
 
 .fullscreen-mode .visual-area {
@@ -285,8 +265,6 @@ body.fullscreen-mode {
   width: 100%;
   height: 100%;
   min-height: 0;
-  border: none;
-  border-radius: 0;
 }
 
 .fullscreen-mode .status,
@@ -302,62 +280,61 @@ body.fullscreen-mode {
   display: block;
   position: fixed;
   z-index: 200;
-  top: calc(58px + env(safe-area-inset-top));
+  top: calc(60px + env(safe-area-inset-top));
   right: 12px;
   bottom: calc(12px + env(safe-area-inset-bottom));
   width: min(360px, calc(100vw - 24px));
-  max-height: none;
   overflow-y: auto;
   padding: 8px;
-  background: #0c1425ee;
-  border: 1px solid #ffffff25;
+  border: 1px solid #52617c;
   border-radius: 16px;
+  background: #0d1527ed;
   backdrop-filter: blur(18px);
 }
 
 .fullscreen-mode .menu-panel .card {
-  background: #111a2cf2;
+  background: #111a2cf5;
 }
 
-@media (max-width: 600px) {
-  body {
-    padding: 10px;
-  }
-
-  .visual-area {
-    height: 290px;
-  }
+@media(max-width: 600px) {
+  body { padding: 10px; }
+  .visual-area { height: 300px; }
+  .card { padding: 15px; }
 }
 </style>
 </head>
 
 <body>
+
 <div class="container">
 
 <header>
   <h1>Audio Visualizer</h1>
-  <p>Microphone Spectrum Analyzer</p>
+  <p>3D Spectrum Analyzer</p>
 </header>
 
-<div class="visual-card">
+<section class="visual-card">
+
   <div class="visual-area" id="visualArea">
     <canvas id="visualizer"></canvas>
     <button class="view-button" id="viewBtn">全画面</button>
   </div>
+
   <div class="status">
-    <span class="status-dot" id="statusDot"></span>
+    <span class="dot" id="statusDot"></span>
     <span id="statusText">マイク未接続</span>
   </div>
-</div>
+
+</section>
 
 <div class="controls">
   <button class="main-button" id="startBtn">マイク開始</button>
   <button class="secondary-button" id="reconnectBtn">マイク再取得</button>
 </div>
 
-<div class="menu-panel" id="menuPanel">
+<div class="menu-panel">
 
-  <div class="card">
+  <section class="card">
     <h2>ビジュアル設定</h2>
 
     <div class="setting">
@@ -365,7 +342,7 @@ body.fullscreen-mode {
         <span>入力レベル</span>
         <span class="setting-value" id="gainValue">50%</span>
       </div>
-      <input id="gainSlider" type="range" min="0" max="100" value="50">
+      <input type="range" id="gainSlider" min="0" max="100" value="50">
     </div>
 
     <div class="setting">
@@ -373,7 +350,7 @@ body.fullscreen-mode {
         <span>表示感度</span>
         <span class="setting-value" id="sensitivityValue">70%</span>
       </div>
-      <input id="sensitivitySlider" type="range" min="0" max="100" value="70">
+      <input type="range" id="sensitivitySlider" min="0" max="100" value="70">
     </div>
 
     <div class="setting">
@@ -381,11 +358,11 @@ body.fullscreen-mode {
         <span>滑らかさ</span>
         <span class="setting-value" id="smoothValue">65%</span>
       </div>
-      <input id="smoothSlider" type="range" min="0" max="95" value="65">
+      <input type="range" id="smoothSlider" min="0" max="95" value="65">
     </div>
-  </div>
+  </section>
 
-  <div class="card">
+  <section class="card">
     <h2>マイク入力レベル</h2>
     <div class="meter-head">
       <span>Input</span>
@@ -394,31 +371,48 @@ body.fullscreen-mode {
     <div class="meter-bg">
       <div class="meter-fill" id="inputMeter"></div>
     </div>
-  </div>
+  </section>
 
-  <div class="card">
+  <section class="card">
     <h2>周波数レベル</h2>
 
     <div class="frequency-grid">
+
       <div class="frequency-item">
-        <div class="meter-head"><span>Low</span><span id="lowValue">0%</span></div>
-        <div class="meter-bg"><div class="meter-fill" id="lowMeter"></div></div>
+        <div class="meter-head">
+          <span>Low</span>
+          <span id="lowValue">0%</span>
+        </div>
+        <div class="meter-bg">
+          <div class="meter-fill" id="lowMeter"></div>
+        </div>
         <small>35–250 Hz</small>
       </div>
 
       <div class="frequency-item">
-        <div class="meter-head"><span>Mid</span><span id="midValue">0%</span></div>
-        <div class="meter-bg"><div class="meter-fill" id="midMeter"></div></div>
+        <div class="meter-head">
+          <span>Mid</span>
+          <span id="midValue">0%</span>
+        </div>
+        <div class="meter-bg">
+          <div class="meter-fill" id="midMeter"></div>
+        </div>
         <small>250–3500 Hz</small>
       </div>
 
       <div class="frequency-item">
-        <div class="meter-head"><span>High</span><span id="highValue">0%</span></div>
-        <div class="meter-bg"><div class="meter-fill" id="highMeter"></div></div>
+        <div class="meter-head">
+          <span>High</span>
+          <span id="highValue">0%</span>
+        </div>
+        <div class="meter-bg">
+          <div class="meter-fill" id="highMeter"></div>
+        </div>
         <small>3500–12000 Hz</small>
       </div>
+
     </div>
-  </div>
+  </section>
 
 </div>
 </div>
@@ -427,33 +421,14 @@ body.fullscreen-mode {
 const canvas = document.getElementById("visualizer");
 const ctx = canvas.getContext("2d");
 
-const startBtn = document.getElementById("startBtn");
-const reconnectBtn = document.getElementById("reconnectBtn");
-const viewBtn = document.getElementById("viewBtn");
-
-const gainSlider = document.getElementById("gainSlider");
-const sensitivitySlider = document.getElementById("sensitivitySlider");
-const smoothSlider = document.getElementById("smoothSlider");
-
-const inputMeter = document.getElementById("inputMeter");
-const lowMeter = document.getElementById("lowMeter");
-const midMeter = document.getElementById("midMeter");
-const highMeter = document.getElementById("highMeter");
-
-const inputValue = document.getElementById("inputValue");
-const lowValue = document.getElementById("lowValue");
-const midValue = document.getElementById("midValue");
-const highValue = document.getElementById("highValue");
-
-const statusText = document.getElementById("statusText");
-const statusDot = document.getElementById("statusDot");
+const $ = id => document.getElementById(id);
 
 let audioContext = null;
+let stream = null;
 let source = null;
 let gainNode = null;
 let analyser = null;
 let inputAnalyser = null;
-let stream = null;
 
 let frequencyData = null;
 let inputData = null;
@@ -462,13 +437,18 @@ let bars = [];
 let peaks = [];
 let particles = [];
 
-let smoothBands = { low: 0, mid: 0, high: 0 };
-let currentBass = 0;
-let animationFrame = null;
+let smoothBands = {
+  low: 0,
+  mid: 0,
+  high: 0
+};
 
+let currentBass = 0;
 let width = 0;
 let height = 0;
 let dpr = 1;
+let animationFrame = null;
+let connectionBusy = false;
 
 function resizeCanvas() {
   const rect = canvas.getBoundingClientRect();
@@ -477,52 +457,48 @@ function resizeCanvas() {
   width = rect.width;
   height = rect.height;
 
-  canvas.width = Math.round(width * dpr);
-  canvas.height = Math.round(height * dpr);
+  canvas.width = Math.max(1, Math.round(width * dpr));
+  canvas.height = Math.max(1, Math.round(height * dpr));
 
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-  const count = Math.max(32, Math.floor(width / 7));
+  const count = Math.max(30, Math.floor(width / 7));
 
   bars = Array(count).fill(0);
   peaks = Array(count).fill(0);
 }
 
 const resizeObserver = new ResizeObserver(resizeCanvas);
-resizeObserver.observe(document.getElementById("visualArea"));
+resizeObserver.observe($("visualArea"));
 window.addEventListener("resize", resizeCanvas);
 
-function getGainFromPercent(percent) {
-  if (percent <= 50) return percent / 50 * 2;
-  return 2 + (percent - 50) / 50;
+function getGain(percent) {
+  return percent <= 50
+    ? percent / 50 * 2
+    : 2 + (percent - 50) / 50;
 }
 
 function updateSettings() {
-  document.getElementById("gainValue").textContent =
-    gainSlider.value + "%";
+  $("gainValue").textContent = $("gainSlider").value + "%";
+  $("sensitivityValue").textContent = $("sensitivitySlider").value + "%";
+  $("smoothValue").textContent = $("smoothSlider").value + "%";
 
-  document.getElementById("sensitivityValue").textContent =
-    sensitivitySlider.value + "%";
-
-  document.getElementById("smoothValue").textContent =
-    smoothSlider.value + "%";
-
-  if (gainNode) {
+  if (gainNode && audioContext) {
     gainNode.gain.setTargetAtTime(
-      getGainFromPercent(Number(gainSlider.value)),
+      getGain(Number($("gainSlider").value)),
       audioContext.currentTime,
       0.05
     );
   }
 }
 
-gainSlider.addEventListener("input", updateSettings);
-sensitivitySlider.addEventListener("input", updateSettings);
-smoothSlider.addEventListener("input", updateSettings);
+["gainSlider", "sensitivitySlider", "smoothSlider"].forEach(id => {
+  $(id).addEventListener("input", updateSettings);
+});
 
 function setStatus(active, message) {
-  statusText.textContent = message;
-  statusDot.classList.toggle("active", active);
+  $("statusText").textContent = message;
+  $("statusDot").classList.toggle("active", active);
 }
 
 async function stopMicrophone() {
@@ -531,24 +507,30 @@ async function stopMicrophone() {
     stream = null;
   }
 
+  source = null;
+  gainNode = null;
+  analyser = null;
+  inputAnalyser = null;
+  frequencyData = null;
+  inputData = null;
+
   if (audioContext) {
     try {
       await audioContext.close();
     } catch (e) {}
     audioContext = null;
   }
-
-  source = null;
-  gainNode = null;
-  analyser = null;
-  inputAnalyser = null;
 }
 
 async function startMicrophone() {
-  startBtn.disabled = true;
-  reconnectBtn.disabled = true;
-  startBtn.textContent = "接続中...";
+  if (connectionBusy) return;
+
+  connectionBusy = true;
+  $("startBtn").disabled = true;
+  $("reconnectBtn").disabled = true;
+
   setStatus(false, "マイクを取得しています...");
+  $("startBtn").textContent = "接続中...";
 
   try {
     await stopMicrophone();
@@ -561,7 +543,9 @@ async function startMicrophone() {
       }
     });
 
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    audioContext = new (
+      window.AudioContext || window.webkitAudioContext
+    )();
 
     if (audioContext.state === "suspended") {
       await audioContext.resume();
@@ -571,11 +555,10 @@ async function startMicrophone() {
 
     inputAnalyser = audioContext.createAnalyser();
     inputAnalyser.fftSize = 2048;
-    inputAnalyser.smoothingTimeConstant = 0.3;
+    inputAnalyser.smoothingTimeConstant = 0.2;
 
     gainNode = audioContext.createGain();
-    gainNode.gain.value =
-      getGainFromPercent(Number(gainSlider.value));
+    gainNode.gain.value = getGain(Number($("gainSlider").value));
 
     analyser = audioContext.createAnalyser();
     analyser.fftSize = 8192;
@@ -590,48 +573,55 @@ async function startMicrophone() {
     frequencyData = new Uint8Array(analyser.frequencyBinCount);
     inputData = new Float32Array(inputAnalyser.fftSize);
 
+    smoothBands = { low: 0, mid: 0, high: 0 };
+    particles = [];
+
     setStatus(true, "マイク接続中");
-    startBtn.textContent = "マイク接続済み";
+    $("startBtn").textContent = "マイク接続済み";
 
   } catch (error) {
     console.error(error);
+
+    await stopMicrophone();
+
     setStatus(false, "マイクを取得できませんでした");
-    startBtn.textContent = "マイク開始";
-    alert("マイクを取得できませんでした。Safariのマイク許可設定を確認してください。");
+    $("startBtn").textContent = "マイク開始";
+
+    alert(
+      "マイクを取得できませんでした。\n\nSafariのマイク許可設定と、ページがHTTPSで開かれているかを確認してください。"
+    );
+
   } finally {
-    startBtn.disabled = false;
-    reconnectBtn.disabled = false;
+    connectionBusy = false;
+    $("startBtn").disabled = false;
+    $("reconnectBtn").disabled = false;
   }
 }
 
-startBtn.addEventListener("click", async () => {
-  if (!stream) {
-    await startMicrophone();
-  }
+$("startBtn").addEventListener("click", () => {
+  if (!stream) startMicrophone();
 });
 
-reconnectBtn.addEventListener("click", startMicrophone);
+$("reconnectBtn").addEventListener("click", startMicrophone);
 
 function getFrequencyIndex(hz) {
   return Math.round(hz * analyser.fftSize / audioContext.sampleRate);
 }
 
-function getBandLevel(data, minHz, maxHz) {
+function getBandLevel(minHz, maxHz) {
   const min = Math.max(0, getFrequencyIndex(minHz));
-  const max = Math.min(data.length - 1, getFrequencyIndex(maxHz));
+  const max = Math.min(frequencyData.length - 1, getFrequencyIndex(maxHz));
 
   let sum = 0;
   let count = 0;
 
   for (let i = min; i <= max; i++) {
-    const value = data[i] / 255;
-    sum += value * value;
+    const v = frequencyData[i] / 255;
+    sum += v * v;
     count++;
   }
 
-  if (!count) return 0;
-
-  return Math.sqrt(sum / count);
+  return count ? Math.sqrt(sum / count) : 0;
 }
 
 function updateMeters() {
@@ -640,6 +630,7 @@ function updateMeters() {
   inputAnalyser.getFloatTimeDomainData(inputData);
 
   let sum = 0;
+
   for (let i = 0; i < inputData.length; i++) {
     sum += inputData[i] * inputData[i];
   }
@@ -647,41 +638,48 @@ function updateMeters() {
   const rms = Math.sqrt(sum / inputData.length);
   const db = 20 * Math.log10(Math.max(rms, 0.000001));
 
-  const inputLevel = Math.max(0, Math.min(100, (db + 60) * 2));
+  const input = Math.max(0, Math.min(100, (db + 60) * 2));
 
-  inputMeter.style.width = inputLevel + "%";
-  inputValue.textContent = Math.round(inputLevel) + "%";
+  $("inputMeter").style.width = input + "%";
+  $("inputValue").textContent = Math.round(input) + "%";
 
-  const low = getBandLevel(frequencyData, 35, 250);
-  const mid = getBandLevel(frequencyData, 250, 3500);
-  const high = getBandLevel(frequencyData, 3500, 12000);
+  const low = getBandLevel(35, 250);
+  const mid = getBandLevel(250, 3500);
+  const high = getBandLevel(3500, 12000);
 
-  const smoothing = Number(smoothSlider.value) / 100 * 0.9;
+  const smoothing = Number($("smoothSlider").value) / 100 * 0.9;
 
-  smoothBands.low = smoothBands.low * smoothing + low * (1 - smoothing);
-  smoothBands.mid = smoothBands.mid * smoothing + mid * (1 - smoothing);
-  smoothBands.high = smoothBands.high * smoothing + high * (1 - smoothing);
+  smoothBands.low =
+    smoothBands.low * smoothing + low * (1 - smoothing);
 
-  const toPercent = v => Math.min(100, v * 180);
+  smoothBands.mid =
+    smoothBands.mid * smoothing + mid * (1 - smoothing);
 
-  const lowPercent = toPercent(smoothBands.low);
-  const midPercent = toPercent(smoothBands.mid);
-  const highPercent = toPercent(smoothBands.high);
+  smoothBands.high =
+    smoothBands.high * smoothing + high * (1 - smoothing);
 
-  lowMeter.style.width = lowPercent + "%";
-  midMeter.style.width = midPercent + "%";
-  highMeter.style.width = highPercent + "%";
+  const lowP = Math.min(100, smoothBands.low * 180);
+  const midP = Math.min(100, smoothBands.mid * 180);
+  const highP = Math.min(100, smoothBands.high * 180);
 
-  lowValue.textContent = Math.round(lowPercent) + "%";
-  midValue.textContent = Math.round(midPercent) + "%";
-  highValue.textContent = Math.round(highPercent) + "%";
+  $("lowMeter").style.width = lowP + "%";
+  $("midMeter").style.width = midP + "%";
+  $("highMeter").style.width = highP + "%";
+
+  $("lowValue").textContent = Math.round(lowP) + "%";
+  $("midValue").textContent = Math.round(midP) + "%";
+  $("highValue").textContent = Math.round(highP) + "%";
 
   currentBass = smoothBands.low;
 }
 
+/* 背景 */
 function drawBackground(time) {
   const bass = Math.min(1, currentBass * 5);
   const pulse = bass * 0.35;
+
+  ctx.fillStyle = "#080c18";
+  ctx.fillRect(0, 0, width, height);
 
   const gradient = ctx.createRadialGradient(
     width / 2,
@@ -689,27 +687,53 @@ function drawBackground(time) {
     10,
     width / 2,
     height * 0.85,
-    height * 0.9
+    height
   );
 
-  gradient.addColorStop(0, `rgba(42, 95, 210, ${0.08 + pulse})`);
-  gradient.addColorStop(0.5, `rgba(40, 60, 140, ${0.04 + pulse * 0.3})`);
-  gradient.addColorStop(1, "#080c16");
+  gradient.addColorStop(0, `rgba(40,100,230,${0.08 + pulse})`);
+  gradient.addColorStop(0.5, `rgba(40,65,150,${0.06 + pulse * 0.3})`);
+  gradient.addColorStop(1, "#080c18");
 
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, width, height);
 
-  // 背景の光の波紋
-  const radius = 50 + bass * 100 + Math.sin(time * 0.001) * 10;
+  // 奥行きのある床面グリッド
+  const center = width / 2;
+  const horizon = height * 0.83;
+
+  ctx.lineWidth = 1;
+
+  for (let i = 0; i < 10; i++) {
+    const t = i / 9;
+    const y = horizon + t * t * height * 0.2;
+
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(width, y);
+    ctx.strokeStyle = `rgba(80,145,255,${0.025 + t * 0.025})`;
+    ctx.stroke();
+  }
+
+  for (let i = -10; i <= 10; i++) {
+    ctx.beginPath();
+    ctx.moveTo(center, horizon);
+    ctx.lineTo(center + i * width * 0.12, height);
+    ctx.strokeStyle = "rgba(85,145,255,0.045)";
+    ctx.stroke();
+  }
+
+  // 低音に反応する波紋
+  const radius = 45 + bass * 100 + Math.sin(time * 0.0015) * 5;
 
   ctx.beginPath();
-  ctx.arc(width / 2, height * 0.82, radius, 0, Math.PI * 2);
-  ctx.strokeStyle = `rgba(75, 140, 255, ${0.05 + pulse * 0.3})`;
-  ctx.lineWidth = 2 + bass * 5;
+  ctx.ellipse(center, horizon, radius * 1.8, radius * 0.4, 0, 0, Math.PI * 2);
+  ctx.strokeStyle = `rgba(65,140,255,${0.05 + pulse * 0.4})`;
+  ctx.lineWidth = 2 + bass * 4;
   ctx.stroke();
 }
 
-function drawParticles(time) {
+/* 浮遊粒子 */
+function drawParticles() {
   if (currentBass > 0.025 && Math.random() < 0.35) {
     particles.push({
       x: Math.random() * width,
@@ -728,15 +752,80 @@ function drawParticles(time) {
 
     ctx.beginPath();
     ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(110, 170, 255, ${p.life * 0.6})`;
+    ctx.fillStyle = `rgba(120,180,255,${p.life * 0.65})`;
     ctx.fill();
 
     if (p.life <= 0) particles.splice(i, 1);
   }
 
-  if (particles.length > 100) particles.splice(0, 10);
+  if (particles.length > 100) {
+    particles.splice(0, 10);
+  }
 }
 
+/* 立体バーの描画 */
+function draw3DBar(x, y, barWidth, barHeight, depth, hue, intensity) {
+  const tilt = depth * 0.65;
+  const bottom = height * 0.83;
+  const right = x + barWidth;
+
+  // 発光
+  ctx.shadowBlur = 8 + intensity * 18;
+  ctx.shadowColor = `hsla(${hue},100%,65%,0.85)`;
+
+  // 正面
+  const front = ctx.createLinearGradient(0, bottom, 0, y);
+  front.addColorStop(0, `hsla(${hue},100%,48%,0.95)`);
+  front.addColorStop(0.45, `hsla(${hue + 12},100%,62%,0.95)`);
+  front.addColorStop(1, `hsla(${hue + 30},100%,78%,0.95)`);
+
+  ctx.fillStyle = front;
+  ctx.beginPath();
+  ctx.roundRect(x, y, barWidth, barHeight, 2);
+  ctx.fill();
+
+  ctx.shadowBlur = 0;
+
+  // 右側面
+  ctx.beginPath();
+  ctx.moveTo(right, y);
+  ctx.lineTo(right + depth, y - tilt);
+  ctx.lineTo(right + depth, bottom - tilt);
+  ctx.lineTo(right, bottom);
+  ctx.closePath();
+
+  ctx.fillStyle = `hsla(${hue - 12},75%,25%,0.96)`;
+  ctx.fill();
+
+  ctx.strokeStyle = `hsla(${hue},90%,65%,0.4)`;
+  ctx.lineWidth = 0.6;
+  ctx.stroke();
+
+  // 上面
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + depth, y - tilt);
+  ctx.lineTo(right + depth, y - tilt);
+  ctx.lineTo(right, y);
+  ctx.closePath();
+
+  const top = ctx.createLinearGradient(x, y, x, y - tilt);
+  top.addColorStop(0, `hsla(${hue + 20},100%,65%,0.95)`);
+  top.addColorStop(1, `hsla(${hue + 40},100%,90%,1)`);
+
+  ctx.fillStyle = top;
+  ctx.fill();
+
+  // 正面の光沢ライン
+  ctx.beginPath();
+  ctx.moveTo(x + 2, y + 2);
+  ctx.lineTo(x + 2, bottom - 2);
+  ctx.strokeStyle = "rgba(255,255,255,0.15)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+}
+
+/* Spectrum */
 function drawSpectrum(time) {
   if (!analyser || !frequencyData) {
     drawIdle(time);
@@ -746,51 +835,57 @@ function drawSpectrum(time) {
   analyser.getByteFrequencyData(frequencyData);
   updateMeters();
 
-  const sensitivity = Number(sensitivitySlider.value) / 100;
-  const smooth = Number(smoothSlider.value) / 100;
+  const sensitivity = Number($("sensitivitySlider").value) / 100;
+  const smooth = Number($("smoothSlider").value) / 100;
 
   const count = bars.length;
-  const gap = Math.max(2, width / count * 0.22);
-  const barWidth = width / count - gap;
+  const gap = Math.max(2, width / count * 0.23);
+  const barWidth = Math.max(1, width / count - gap);
+  const depth = Math.min(8, Math.max(3, width * 0.009));
 
   const centerY = height * 0.83;
-  const maxHeight = height * 0.67;
+  const maxHeight = height * 0.66;
 
   drawBackground(time);
-  drawParticles(time);
+  drawParticles();
 
   const minHz = 35;
   const maxHz = 12000;
 
+  // バーを奥側から順番に描画
   for (let i = 0; i < count; i++) {
     const position = i / count;
 
     const hz = minHz * Math.pow(maxHz / minHz, position);
+
     const index = Math.min(
       frequencyData.length - 1,
-      Math.max(0, Math.round(hz * analyser.fftSize / audioContext.sampleRate))
+      Math.max(
+        0,
+        Math.round(hz * analyser.fftSize / audioContext.sampleRate)
+      )
     );
 
     let value = frequencyData[index] / 255;
 
-    // 低音と高音の存在感を調整
-    const bassBoost = position < 0.25 ? 1.35 : 1;
-    const trebleBoost = position > 0.75 ? 1.18 : 1;
+    // 周波数ごとのバランス
+    if (position < 0.25) value *= 1.35;
+    else if (position > 0.75) value *= 1.18;
 
-    value *= bassBoost * trebleBoost;
-    value = Math.min(1, value * (0.35 + sensitivity * 2.4));
-
-    // 周囲の周波数を少し混ぜて滑らかにする
+    // 隣接周波数を混ぜる
     if (index > 1 && index < frequencyData.length - 2) {
       const neighbor =
         (frequencyData[index - 1] +
          frequencyData[index + 1]) / 510;
 
       value = value * 0.78 + neighbor * 0.22;
-      value *= (0.8 + sensitivity * 0.4);
     }
 
-    bars[i] = bars[i] * smooth * 0.65 + value * (1 - smooth * 0.65);
+    value = Math.min(1, value * (0.35 + sensitivity * 2.4));
+
+    bars[i] =
+      bars[i] * smooth * 0.65 +
+      value * (1 - smooth * 0.65);
 
     const barHeight = Math.max(2, bars[i] * maxHeight);
 
@@ -801,54 +896,47 @@ function drawSpectrum(time) {
 
     const x = i * (barWidth + gap);
     const y = centerY - barHeight;
+    const hue = 210 + position * 115;
 
-    const hue = 215 + position * 105;
-
-    // バー本体のグラデーション
-    const gradient = ctx.createLinearGradient(0, centerY, 0, y);
-
-    gradient.addColorStop(0, `hsla(${hue}, 100%, 62%, 0.95)`);
-    gradient.addColorStop(0.5, `hsla(${hue + 15}, 100%, 67%, 0.9)`);
-    gradient.addColorStop(1, `hsla(${hue + 35}, 100%, 78%, 0.8)`);
-
-    // 発光
-    ctx.shadowBlur = 10 + bars[i] * 24;
-    ctx.shadowColor = `hsla(${hue}, 100%, 65%, 0.9)`;
-
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.roundRect(x, y, barWidth, barHeight, 4);
-    ctx.fill();
-
-    ctx.shadowBlur = 0;
-
-    // ピーク表示
-    const peakY = centerY - peaks[i] * maxHeight;
-
-    ctx.fillStyle = `hsla(${hue + 30}, 100%, 85%, 0.9)`;
-    ctx.fillRect(x, peakY - 2, barWidth, 2);
-
-    // 下側の反射
-    const reflection = ctx.createLinearGradient(
-      0, centerY, 0, centerY + barHeight * 0.38
+    // 立体バー
+    draw3DBar(
+      x,
+      y,
+      barWidth,
+      barHeight,
+      depth,
+      hue,
+      bars[i]
     );
 
-    reflection.addColorStop(0, `hsla(${hue}, 100%, 65%, 0.2)`);
-    reflection.addColorStop(1, `hsla(${hue}, 100%, 60%, 0)`);
+    // ピークライン
+    const peakY = centerY - peaks[i] * maxHeight;
+
+    ctx.fillStyle = `hsla(${hue + 25},100%,85%,0.95)`;
+    ctx.fillRect(x, peakY - 2, barWidth, 2);
+
+    // 床面への反射
+    const reflection = ctx.createLinearGradient(
+      0, centerY, 0, centerY + barHeight * 0.28
+    );
+
+    reflection.addColorStop(0, `hsla(${hue},100%,65%,0.18)`);
+    reflection.addColorStop(1, `hsla(${hue},100%,60%,0)`);
 
     ctx.fillStyle = reflection;
-    ctx.fillRect(x, centerY + 3, barWidth, barHeight * 0.38);
+    ctx.fillRect(x, centerY + 3, barWidth, barHeight * 0.28);
   }
 
-  // 中央の光のライン
-  const lineGradient = ctx.createLinearGradient(0, 0, width, 0);
-  lineGradient.addColorStop(0, "rgba(70,120,255,0)");
-  lineGradient.addColorStop(0.5, "rgba(120,190,255,0.9)");
-  lineGradient.addColorStop(1, "rgba(70,120,255,0)");
+  // 中央の光るライン
+  const line = ctx.createLinearGradient(0, 0, width, 0);
 
-  ctx.shadowBlur = 14;
+  line.addColorStop(0, "rgba(70,120,255,0)");
+  line.addColorStop(0.5, "rgba(120,190,255,0.95)");
+  line.addColorStop(1, "rgba(70,120,255,0)");
+
+  ctx.shadowBlur = 15;
   ctx.shadowColor = "#4f9fff";
-  ctx.strokeStyle = lineGradient;
+  ctx.strokeStyle = line;
   ctx.lineWidth = 1.5;
 
   ctx.beginPath();
@@ -858,7 +946,7 @@ function drawSpectrum(time) {
 
   ctx.shadowBlur = 0;
 
-  // 低音に連動する中央の光
+  // 低音の光が画面下部に広がる
   const bassGlow = Math.min(1, currentBass * 6);
 
   const glow = ctx.createRadialGradient(
@@ -866,37 +954,38 @@ function drawSpectrum(time) {
     width / 2, centerY, width * 0.55
   );
 
-  glow.addColorStop(0, `rgba(80,140,255,${bassGlow * 0.16})`);
-  glow.addColorStop(1, "rgba(80,140,255,0)");
+  glow.addColorStop(0, `rgba(65,130,255,${bassGlow * 0.18})`);
+  glow.addColorStop(1, "rgba(65,130,255,0)");
 
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, width, height);
 }
 
+/* 待機表示 */
 function drawIdle(time) {
-  ctx.fillStyle = "#080c16";
+  ctx.fillStyle = "#080c18";
   ctx.fillRect(0, 0, width, height);
 
-  const centerX = width / 2;
-  const centerY = height * 0.7;
-
-  const pulse = 1 + Math.sin(time * 0.002) * 0.04;
+  const cx = width / 2;
+  const cy = height * 0.68;
+  const pulse = 1 + Math.sin(time * 0.002) * 0.06;
 
   ctx.beginPath();
-  ctx.arc(centerX, centerY, 30 * pulse, 0, Math.PI * 2);
-  ctx.strokeStyle = "#477bdf";
+  ctx.arc(cx, cy, 30 * pulse, 0, Math.PI * 2);
+  ctx.strokeStyle = "#578dff";
   ctx.lineWidth = 2;
   ctx.shadowBlur = 20;
-  ctx.shadowColor = "#477bdf";
+  ctx.shadowColor = "#578dff";
   ctx.stroke();
   ctx.shadowBlur = 0;
 
-  ctx.fillStyle = "#91a9d8";
-  ctx.font = "14px sans-serif";
+  ctx.fillStyle = "#9aafd8";
+  ctx.font = "13px sans-serif";
   ctx.textAlign = "center";
-  ctx.fillText("MICROPHONE STANDBY", centerX, centerY + 65);
+  ctx.fillText("MICROPHONE STANDBY", cx, cy + 65);
 }
 
+/* アニメーション */
 function animate(time) {
   ctx.clearRect(0, 0, width, height);
   drawSpectrum(time);
@@ -908,41 +997,37 @@ function startAnimation() {
   animationFrame = requestAnimationFrame(animate);
 }
 
-viewBtn.addEventListener("click", () => {
-  if (!document.body.classList.contains("fullscreen-mode")) {
-    document.body.classList.add("fullscreen-mode");
-    viewBtn.textContent = "メニュー";
-  } else if (!document.body.classList.contains("menu-open")) {
-    document.body.classList.add("menu-open");
-    viewBtn.textContent = "メニューを閉じる";
+/* 全画面切り替え */
+$("viewBtn").addEventListener("click", () => {
+  const body = document.body;
+
+  if (!body.classList.contains("fullscreen-mode")) {
+    body.classList.add("fullscreen-mode");
+    body.classList.remove("menu-open");
+    $("viewBtn").textContent = "メニュー";
+  } else if (!body.classList.contains("menu-open")) {
+    body.classList.add("menu-open");
+    $("viewBtn").textContent = "メニューを閉じる";
   } else {
-    document.body.classList.remove("menu-open");
-    viewBtn.textContent = "メニュー";
+    body.classList.remove("menu-open");
+    $("viewBtn").textContent = "メニュー";
   }
-});
 
-document.addEventListener("click", event => {
-  if (event.target.id === "viewBtn") return;
-
-  if (
-    document.body.classList.contains("fullscreen-mode") &&
-    document.body.classList.contains("menu-open") &&
-    event.target.closest(".menu-panel")
-  ) {
-    return;
-  }
+  requestAnimationFrame(resizeCanvas);
 });
 
 document.addEventListener("keydown", event => {
   if (event.key === "Escape") {
     document.body.classList.remove("fullscreen-mode", "menu-open");
-    viewBtn.textContent = "全画面";
+    $("viewBtn").textContent = "全画面";
+    requestAnimationFrame(resizeCanvas);
   }
 });
 
 updateSettings();
 resizeCanvas();
 startAnimation();
+
 </script>
 </body>
 </html>
