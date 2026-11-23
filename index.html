@@ -320,10 +320,14 @@ input[type="range"] {
       </div>
       <input id="gain" type="range" min="0" max="100" step="1" value="50">
       <div class="rangeEnds">
-        <span>0%</span><span>300%</span><span>600%</span>
+        <span>0%</span>
+        <span>300%</span>
+        <span>600%</span>
       </div>
       <div class="rangeScale">
-        <span>最小</span><span>標準</span><span>最大</span>
+        <span>最小</span>
+        <span>標準</span>
+        <span>最大</span>
       </div>
     </div>
 
@@ -334,10 +338,14 @@ input[type="range"] {
       </div>
       <input id="sensitivity" type="range" min="0" max="100" step="1" value="50">
       <div class="rangeEnds">
-        <span>0%</span><span>150%</span><span>300%</span>
+        <span>0%</span>
+        <span>150%</span>
+        <span>300%</span>
       </div>
       <div class="rangeScale">
-        <span>最小</span><span>標準</span><span>最大</span>
+        <span>最小</span>
+        <span>標準</span>
+        <span>最大</span>
       </div>
     </div>
 
@@ -368,7 +376,9 @@ input[type="range"] {
           <span>LOW · 35–250 Hz</span>
           <span id="lowValue">0%</span>
         </div>
-        <div class="meterTrack"><div class="meterFill" id="lowMeter"></div></div>
+        <div class="meterTrack">
+          <div class="meterFill" id="lowMeter"></div>
+        </div>
       </div>
 
       <div class="meter">
@@ -376,7 +386,9 @@ input[type="range"] {
           <span>MID · 250–3500 Hz</span>
           <span id="midValue">0%</span>
         </div>
-        <div class="meterTrack"><div class="meterFill" id="midMeter"></div></div>
+        <div class="meterTrack">
+          <div class="meterFill" id="midMeter"></div>
+        </div>
       </div>
 
       <div class="meter">
@@ -384,11 +396,14 @@ input[type="range"] {
           <span>HIGH · 3500–12000 Hz</span>
           <span id="highValue">0%</span>
         </div>
-        <div class="meterTrack"><div class="meterFill" id="highMeter"></div></div>
+        <div class="meterTrack">
+          <div class="meterFill" id="highMeter"></div>
+        </div>
       </div>
     </div>
 
-    <button class="btn" id="reconnectBtn" style="width:100%; margin-top:20px;">
+    <button class="btn" id="reconnectBtn"
+      style="width:100%; margin-top:20px;">
       マイクを再取得
     </button>
   </div>
@@ -733,14 +748,11 @@ function updateBassGlow() {
   if (isRunning && analyser) {
     const low = averageFrequency(35, 250) / 255;
 
-    // 小さな音では反応しすぎないように調整
     target = Math.max(0, (low - 0.08) * 1.7);
     target = Math.min(1, target);
   }
 
-  // 立ち上がりと減衰を滑らかにする
   const speed = target > bassGlow ? 0.12 : 0.045;
-
   bassGlow += (target - bassGlow) * speed;
 }
 
@@ -770,17 +782,15 @@ function drawBackground() {
   ctx.fillRect(0, 0, width, height);
 }
 
-/* 低音に反応する控えめな光 */
+/* 低音に反応する光：強度を約2倍に調整 */
 function drawBassGlow() {
   if (bassGlow < 0.005) return;
 
   const centerX = width * .5;
   const centerY = height * .54;
 
-  // 音量に合わせて光の大きさを少し変える
-  const radius = width * (.22 + bassGlow * .13);
-
-  const alpha = bassGlow * .105;
+  const radius = width * (.25 + bassGlow * .16);
+  const alpha = bassGlow * 0.21;
 
   const glow = ctx.createRadialGradient(
     centerX, centerY, 0,
@@ -789,12 +799,12 @@ function drawBassGlow() {
 
   glow.addColorStop(
     0,
-    `rgba(112,135,255,${alpha})`
+    `rgba(125,145,255,${alpha})`
   );
 
   glow.addColorStop(
     .45,
-    `rgba(87,105,220,${alpha * .48})`
+    `rgba(95,115,235,${alpha * .5})`
   );
 
   glow.addColorStop(
